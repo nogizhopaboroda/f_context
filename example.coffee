@@ -1,4 +1,4 @@
-@functional_context ->
+@f_context ->
 
   #array elements count
   f_count(List) ->
@@ -28,6 +28,18 @@
     Accum.push(Iterator)
     f_range_guard(I, Iterator + 1, Accum)
 
+
+  #example of function all
+  f_all(List, F) ->
+    X = List[0]
+    f_all(tl(List), F, F(X))
+
+  f_all(List, F, false) -> false
+  f_all([], F, Memo) -> true
+
+  f_all(List, F, Memo) ->
+    X = List[0]
+    f_all(tl(List), F, F(X))
 
 
 #test_container = {}

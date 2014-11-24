@@ -7,7 +7,7 @@ unique = (input) ->
 @tl = (array) -> array.slice(1)
 
 
-@functional_context = (content, container = this) ->
+@f_context = (content, container = this) ->
 
   #private functions
   build_function = (function_body, function_arguments_names = []) ->
