@@ -42,6 +42,17 @@
     f_all(tl(List), F, F(X))
 
 
+  flatten(List) ->
+    flatten(List, [])
+
+  flatten([], Acc) -> Acc
+  flatten(List, Acc) where(List[0] instanceof Array) ->
+    flatten(tl(List), flatten(List[0], Acc))
+  flatten(List, Acc) ->
+    Acc.push(List[0])
+    flatten(tl(List), Acc)
+
+
 #test_container = {}
 #@functional_context(->
 #  fizbaz(5) -> 'pyat'
