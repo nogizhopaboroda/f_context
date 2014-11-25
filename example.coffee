@@ -1,5 +1,10 @@
 @f_context ->
 
+  #factorial
+  f_fact(0) -> 1
+  f_fact(N) -> N * f_fact(N - 1)
+
+
   #array elements count
   f_count(List) ->
     f_count(List, 0)
