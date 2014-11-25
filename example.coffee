@@ -1,4 +1,9 @@
+#bugs
+# - function with no arguments
+# - string parameters
+
 @f_context ->
+
 
   #factorial
   f_fact(0) -> 1
@@ -20,8 +25,7 @@
 
   f_range(I, I, Accum) -> Accum
   f_range(I, Iterator, Accum) ->
-    Accum.push(Iterator)
-    f_range(I, Iterator + 1, Accum)
+    f_range(I, Iterator + 1, Accum.concat(Iterator))
 
 
   #test guards
@@ -30,32 +34,29 @@
 
   f_range_guard(I, Iterator, Accum) where(I == Iterator) -> Accum
   f_range_guard(I, Iterator, Accum) ->
-    Accum.push(Iterator)
-    f_range_guard(I, Iterator + 1, Accum)
+    f_range_guard(I, Iterator + 1, Accum.concat(Iterator))
 
 
   #example of function all
   f_all(List, F) ->
-    X = List[0]
-    f_all(tl(List), F, F(X))
+    f_all(tl(List), F, F(List[0]))
 
-  f_all(List, F, false) -> false
-  f_all([], F, Memo) -> true
+  f_all(_, _, false) -> false
+  f_all([], _, _) -> true
 
   f_all(List, F, Memo) ->
-    X = List[0]
-    f_all(tl(List), F, F(X))
+    f_all(tl(List), F, F(List[0]))
 
 
-  flatten(List) ->
-    flatten(List, [])
+  # flatten example
+  f_flatten(List) ->
+    f_flatten(List, [])
 
-  flatten([], Acc) -> Acc
-  flatten(List, Acc) where(List[0] instanceof Array) ->
-    flatten(tl(List), flatten(List[0], Acc))
-  flatten(List, Acc) ->
-    Acc.push(List[0])
-    flatten(tl(List), Acc)
+  f_flatten([], Acc) -> Acc
+  f_flatten(List, Acc) where(List[0] instanceof Array) ->
+    f_flatten(tl(List), f_flatten(List[0], Acc))
+  f_flatten(List, Acc) ->
+    f_flatten(tl(List), Acc.concat(List[0]))
 
 
 #test_container = {}

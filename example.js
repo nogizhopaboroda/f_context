@@ -1,5 +1,11 @@
 (function() {
   this.f_context(function() {
+    f_fact(0)(function() {
+      return 1;
+    });
+    f_fact(N)(function() {
+      return N * f_fact(N - 1);
+    });
     f_count(List)(function() {
       return f_count(List, 0);
     });
@@ -16,8 +22,7 @@
       return Accum;
     });
     f_range(I, Iterator, Accum)(function() {
-      Accum.push(Iterator);
-      return f_range(I, Iterator + 1, Accum);
+      return f_range(I, Iterator + 1, Accum.concat(Iterator));
     });
     f_range_guard(I)(function() {
       return f_range_guard(I, 0, []);
@@ -26,24 +31,31 @@
       return Accum;
     }));
     f_range_guard(I, Iterator, Accum)(function() {
-      Accum.push(Iterator);
-      return f_range_guard(I, Iterator + 1, Accum);
+      return f_range_guard(I, Iterator + 1, Accum.concat(Iterator));
     });
     f_all(List, F)(function() {
-      var X;
-      X = List[0];
-      return f_all(tl(List), F, F(X));
+      return f_all(tl(List), F, F(List[0]));
     });
-    f_all(List, F, false)(function() {
+    f_all(_, _, false)(function() {
       return false;
     });
-    f_all([], F, Memo)(function() {
+    f_all([], _, _)(function() {
       return true;
     });
-    return f_all(List, F, Memo)(function() {
-      var X;
-      X = List[0];
-      return f_all(tl(List), F, F(X));
+    f_all(List, F, Memo)(function() {
+      return f_all(tl(List), F, F(List[0]));
+    });
+    f_flatten(List)(function() {
+      return f_flatten(List, []);
+    });
+    f_flatten([], Acc)(function() {
+      return Acc;
+    });
+    f_flatten(List, Acc)(where(List[0] instanceof Array)(function() {
+      return f_flatten(tl(List), f_flatten(List[0], Acc));
+    }));
+    return f_flatten(List, Acc)(function() {
+      return f_flatten(tl(List), Acc.concat(List[0]));
     });
   });
 

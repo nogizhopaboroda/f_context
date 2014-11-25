@@ -61,9 +61,10 @@ unique = (input) ->
       variables = ""
       for argument, index in args
         if argument.type is "variable"
-          variables += """
-            var #{argument()} = arguments[#{index}];\n
-          """
+          if argument() isnt '_'
+            variables += """
+              var #{argument()} = arguments[#{index}];\n
+            """
         else
           if typeof argument is 'object' and argument instanceof Array
             plain_arguments.push("JSON.stringify(arguments[#{index}]) === '#{JSON.stringify(argument)}'")
@@ -74,7 +75,7 @@ unique = (input) ->
 
 
       duplicates = {}
-      for variable in ({name: arg(), index: index} for arg, index in args when typeof arg is 'function')
+      for variable in ({name: arg(), index: index} for arg, index in args when typeof arg is 'function') when variable.name isnt '_'
         if duplicates[variable.name]?
           plain_arguments.push("arguments[#{variable.index}] === arguments[#{duplicates[variable.name]}]")
         else

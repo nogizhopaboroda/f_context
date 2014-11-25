@@ -102,7 +102,9 @@
           for (index = _i = 0, _len = args.length; _i < _len; index = ++_i) {
             argument = args[index];
             if (argument.type === "variable") {
-              variables += "var " + (argument()) + " = arguments[" + index + "];\n";
+              if (argument() !== '_') {
+                variables += "var " + (argument()) + " = arguments[" + index + "];\n";
+              }
             } else {
               if (typeof argument === 'object' && argument instanceof Array) {
                 plain_arguments.push("JSON.stringify(arguments[" + index + "]) === '" + (JSON.stringify(argument)) + "'");
@@ -129,10 +131,12 @@
           })();
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             variable = _ref1[_j];
-            if (duplicates[variable.name] != null) {
-              plain_arguments.push("arguments[" + variable.index + "] === arguments[" + duplicates[variable.name] + "]");
-            } else {
-              duplicates[variable.name] = variable.index;
+            if (variable.name !== '_') {
+              if (duplicates[variable.name] != null) {
+                plain_arguments.push("arguments[" + variable.index + "] === arguments[" + duplicates[variable.name] + "]");
+              } else {
+                duplicates[variable.name] = variable.index;
+              }
             }
           }
           conditions = ((function() {
