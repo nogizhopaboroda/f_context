@@ -2,6 +2,9 @@
 # - function with no arguments
 # - string parameters
 
+#ideas
+# test_func([Head, List...]) ->    - destructuring in pattern matching
+
 @f_context ->
 
 
@@ -63,4 +66,3 @@
 #@functional_context(->
 #  fizbaz(5) -> 'pyat'
 #, test_container)
-
