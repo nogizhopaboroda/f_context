@@ -6,6 +6,15 @@
     f_fact(N)(function() {
       return N * f_fact(N - 1);
     });
+    f_format(Str)(function() {
+      return f_format(Str, "");
+    });
+    f_format(Str, Accum)(where(Str.length <= 3)(function() {
+      return Str.concat(" " + Accum);
+    }));
+    f_format(Str, Accum)(function() {
+      return f_format(Str.slice(0, Str.length - 3), Str.slice(Str.length - 3)).concat(" " + Accum);
+    });
     f_count(List)(function() {
       return f_count(List, 0);
     });

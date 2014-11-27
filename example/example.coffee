@@ -13,6 +13,17 @@
   f_fact(N) -> N * f_fact(N - 1)
 
 
+  #format price
+  f_format(Str) ->
+    f_format(Str, "")
+
+  f_format(Str, Accum) where(Str.length <= 3) ->
+    Str.concat(" " + Accum)
+
+  f_format(Str, Accum) ->
+    f_format(Str.slice(0, Str.length - 3), Str.slice(Str.length - 3)).concat(" " + Accum)
+
+
   #array elements count
   f_count(List) ->
     f_count(List, 0)
