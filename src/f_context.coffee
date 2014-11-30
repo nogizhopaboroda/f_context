@@ -1,3 +1,4 @@
+
 unique = (input) ->
   output = {}
   output[input[key]] = input[key] for key in [0...input.length]
@@ -20,7 +21,7 @@ unique = (input) ->
 
   local_functions_map = ({
     name: item.split("(").shift()
-    params: item.split('(where')[0].split('(function')[0].match(/^.*\((.*)\)/)[1].split(", ")
+    params: item.split('(where')[0].split('(function')[0].replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1").replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1").replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1").match(/^.*\((.*)\)/)[1].split(", ")
     conditions: item.match(/^.*\((.*)\)\(where\((.*)\)\(function/)?[2].split(", ")
   } for item in content.toString().match(/(?:[a-zA-Z0-9_]+)+\(.+\)\(function/ig))
 
@@ -67,7 +68,28 @@ unique = (input) ->
             """
         else
           if typeof argument is 'object' and argument instanceof Array
-            plain_arguments.push("JSON.stringify(arguments[#{index}]) === '#{JSON.stringify(argument)}'")
+            if (x for x in argument when typeof x is 'function').length > 0
+              #process destructuring
+              destructuring_happened = false
+              for k, subindex in argument
+                if k.destructuring
+                  destructuring_happened = true
+                  rest = argument.length - subindex - 1
+                  variables += """
+                    var #{k()} = arguments[#{index}].slice(#{subindex}, arguments[#{index}].length - #{rest});\n
+                  """
+                else
+                  if destructuring_happened
+                    restindex = argument.length - subindex
+                    variables += """
+                      var #{k()} = arguments[#{index}][arguments[#{index}].length - #{restindex}];\n
+                    """
+                  else
+                    variables += """
+                      var #{k()} = arguments[#{index}][#{subindex}];\n
+                    """
+            else
+              plain_arguments.push("JSON.stringify(arguments[#{index}]) === '#{JSON.stringify(argument)}'")
           else
             plain_arguments.push("arguments[#{index}] === #{argument}")
 
@@ -104,12 +126,20 @@ unique = (input) ->
   #pass stubs for local functions and variables
   build_function(
     content.toString().replace(/\n/g, ' ').replace(/function \(\) \{(.*) \}$/gmi, "$1"),
-    uniq_functions_names.concat(uniq_variables_names).concat(['where'])
+    uniq_functions_names
+      .concat(uniq_variables_names)
+      .concat(['where'])
+      .concat(['__slice'])
   ).apply(
     null,
     (base_fn.bind({ fn_name: item }) for item in uniq_functions_names)
       .concat(variables_stubs)
       .concat(-> (fn) -> fn)
+      .concat(->
+        class destructuring_variable extends @
+        destructuring_variable.destructuring = true
+        [destructuring_variable]
+      )
   )
 
 

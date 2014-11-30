@@ -1,8 +1,10 @@
 #bugs
 # - function with no arguments
 # - string parameters
+# - __slice is undefined inside executed function
 
 #ideas
+# pass variables through function insted of create it
 # test_func([Head, List...]) ->    - destructuring in pattern matching
 
 @f_context ->
@@ -77,3 +79,4 @@
 #@functional_context(->
 #  fizbaz(5) -> 'pyat'
 #, test_container)
+

@@ -1,6 +1,8 @@
 (function() {
   var unique,
-    __slice = [].slice;
+    __slice = [].slice,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   unique = function(input) {
     var key, output, value, _i, _ref, _results;
@@ -42,7 +44,7 @@
         item = _ref[_i];
         _results.push({
           name: item.split("(").shift(),
-          params: item.split('(where')[0].split('(function')[0].match(/^.*\((.*)\)/)[1].split(", "),
+          params: item.split('(where')[0].split('(function')[0].replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1").replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1").replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1").match(/^.*\((.*)\)/)[1].split(", "),
           conditions: (_ref1 = item.match(/^.*\((.*)\)\(where\((.*)\)\(function/)) != null ? _ref1[2].split(", ") : void 0
         });
       }
@@ -95,7 +97,7 @@
       functions_calls[this.fn_name]++;
       return (function(_this) {
         return function(fn) {
-          var arg, argument, conditions, duplicates, name, plain_arguments, variable, variables, _i, _j, _len, _len1, _name1, _ref1;
+          var arg, argument, conditions, destructuring_happened, duplicates, k, name, plain_arguments, rest, restindex, subindex, variable, variables, _i, _j, _k, _len, _len1, _len2, _name1, _ref1;
           pseudo[_name1 = _this.fn_name] || (pseudo[_name1] = "");
           plain_arguments = [];
           variables = "";
@@ -107,7 +109,36 @@
               }
             } else {
               if (typeof argument === 'object' && argument instanceof Array) {
-                plain_arguments.push("JSON.stringify(arguments[" + index + "]) === '" + (JSON.stringify(argument)) + "'");
+                if (((function() {
+                  var _j, _len1, _results;
+                  _results = [];
+                  for (_j = 0, _len1 = argument.length; _j < _len1; _j++) {
+                    x = argument[_j];
+                    if (typeof x === 'function') {
+                      _results.push(x);
+                    }
+                  }
+                  return _results;
+                })()).length > 0) {
+                  destructuring_happened = false;
+                  for (subindex = _j = 0, _len1 = argument.length; _j < _len1; subindex = ++_j) {
+                    k = argument[subindex];
+                    if (k.destructuring) {
+                      destructuring_happened = true;
+                      rest = argument.length - subindex - 1;
+                      variables += "var " + (k()) + " = arguments[" + index + "].slice(" + subindex + ", arguments[" + index + "].length - " + rest + ");\n";
+                    } else {
+                      if (destructuring_happened) {
+                        restindex = argument.length - subindex;
+                        variables += "var " + (k()) + " = arguments[" + index + "][arguments[" + index + "].length - " + restindex + "];\n";
+                      } else {
+                        variables += "var " + (k()) + " = arguments[" + index + "][" + subindex + "];\n";
+                      }
+                    }
+                  }
+                } else {
+                  plain_arguments.push("JSON.stringify(arguments[" + index + "]) === '" + (JSON.stringify(argument)) + "'");
+                }
               } else {
                 plain_arguments.push("arguments[" + index + "] === " + argument);
               }
@@ -116,9 +147,9 @@
           plain_arguments.push("arguments.length === " + args.length);
           duplicates = {};
           _ref1 = (function() {
-            var _k, _len1, _results;
+            var _l, _len2, _results;
             _results = [];
-            for (index = _k = 0, _len1 = args.length; _k < _len1; index = ++_k) {
+            for (index = _l = 0, _len2 = args.length; _l < _len2; index = ++_l) {
               arg = args[index];
               if (typeof arg === 'function') {
                 _results.push({
@@ -129,8 +160,8 @@
             }
             return _results;
           })();
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            variable = _ref1[_j];
+          for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+            variable = _ref1[_k];
             if (variable.name !== '_') {
               if (duplicates[variable.name] != null) {
                 plain_arguments.push("arguments[" + variable.index + "] === arguments[" + duplicates[variable.name] + "]");
@@ -140,10 +171,10 @@
             }
           }
           conditions = ((function() {
-            var _k, _len2, _results;
+            var _l, _len3, _results;
             _results = [];
-            for (_k = 0, _len2 = local_functions_map.length; _k < _len2; _k++) {
-              x = local_functions_map[_k];
+            for (_l = 0, _len3 = local_functions_map.length; _l < _len3; _l++) {
+              x = local_functions_map[_l];
               if (x.name === this.fn_name) {
                 _results.push(x);
               }
@@ -173,7 +204,7 @@
         };
       })(this);
     };
-    build_function(content.toString().replace(/\n/g, ' ').replace(/function \(\) \{(.*) \}$/gmi, "$1"), uniq_functions_names.concat(uniq_variables_names).concat(['where'])).apply(null, ((function() {
+    build_function(content.toString().replace(/\n/g, ' ').replace(/function \(\) \{(.*) \}$/gmi, "$1"), uniq_functions_names.concat(uniq_variables_names).concat(['where']).concat(['__slice'])).apply(null, ((function() {
       var _i, _len, _results;
       _results = [];
       for (_i = 0, _len = uniq_functions_names.length; _i < _len; _i++) {
@@ -187,6 +218,20 @@
       return function(fn) {
         return fn;
       };
+    }).concat(function() {
+      var destructuring_variable;
+      destructuring_variable = (function(_super) {
+        __extends(destructuring_variable, _super);
+
+        function destructuring_variable() {
+          return destructuring_variable.__super__.constructor.apply(this, arguments);
+        }
+
+        return destructuring_variable;
+
+      })(this);
+      destructuring_variable.destructuring = true;
+      return [destructuring_variable];
     }));
     return true;
   };
