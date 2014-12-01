@@ -26,6 +26,7 @@ Table of content:
 [Benchmark](#benchmark)
 
 
+
 ##### OVERVIEW:
 Тем, кто сталкивался с [функциональными языками программирования](https://ru.wikipedia.org/wiki/Функциональное_программирование) наверняка знакома такая конструкция:
   ```erlang
@@ -75,7 +76,7 @@ dist/f_context.js - текущий релиз
   ```erlang
   matching_example_1("foo") -> "foo matches"
   matching_example_1("bar") -> "bar matches"
-  matching_example_1(Str) -> "nothing matches"
+  matching_example_1(Str) -> "nothing matches, argument: #{Str}"
   ```
   
 Пример паттерн матчинга для двух аргументов:
@@ -83,7 +84,19 @@ dist/f_context.js - текущий релиз
   matching_example_1_1("foo", "bar") -> "foo and bar matches"
   matching_example_1_1("bar", "bla") -> "bar and bla matches"
   matching_example_1_1("bar", "bar") -> "bar and bar matches"
-  matching_example_1_1(Str, Str2) -> "nothing matches"
+  matching_example_1_1(Str, Str2) -> "nothing matches, arguments: #{Str}, #{Str2}"
+  ```
+  
+Результат:
+  ```js
+  matching_example_1("foo") //returns "foo matches"
+  matching_example_1("bar") //returns "bar matches"
+  matching_example_1("baz") //returns "nothing matches, argument: baz"
+  
+  matching_example_1_1("foo", "bar") //returns "foo and bar matches"
+  matching_example_1_1("bar", "bla") //returns "bar and bla matches"
+  matching_example_1_1("bar", "bar") //returns "bar and bar matches"
+  matching_example_1_1("baz", "bla") //returns "nothing matches, arguments: baz, bla"
   ```
 
 ##### DESTRUCTURING:
