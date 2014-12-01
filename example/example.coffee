@@ -17,8 +17,8 @@
   arguments_test_1(A, A) -> "two arguments and it is the same: #{A}"
 
   #factorial
-#  f_fact(0) -> 1
-#  f_fact(N) -> N * f_fact(N - 1)
+  f_fact(0) -> 1
+  f_fact(N) -> N * f_fact(N - 1)
 #
 #
 #  #format price

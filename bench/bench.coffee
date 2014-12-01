@@ -1,10 +1,16 @@
 Benchmark = require('benchmark');
 
-f_context = require("./../dist/f_context").f_context;
+f_context_v0_1 = require("./releases/0.1/f_context").f_context;
+f_context_current = require("./../dist/f_context").f_context;
 
 
 #factorial computation benchmarks
-f_context ->
+f_context_v0_1 ->
+
+  f_fact_0_1(0) -> 1
+  f_fact_0_1(N) -> N * f_fact_0_1(N - 1)
+
+f_context_current ->
 
   f_fact(0) -> 1
   f_fact(N) -> N * f_fact(N - 1)
@@ -21,7 +27,9 @@ plain_c_factorial = (n) ->
 suite = new Benchmark.Suite
 
 suite
-  .add 'f_context factorial', ->
+  .add 'f_context factorial release 0.1', ->
+    f_fact_0_1(10)
+  .add 'f_context factorial current release', ->
     f_fact(10)
   .add 'plain recursion style factorial', ->
     plain_f_factorial(10)

@@ -10,8 +10,14 @@
     arguments_test_1(A, B)(function() {
       return "two arguments: " + A + ", " + B;
     });
-    return arguments_test_1(A, A)(function() {
+    arguments_test_1(A, A)(function() {
       return "two arguments and it is the same: " + A;
+    });
+    f_fact(0)(function() {
+      return 1;
+    });
+    return f_fact(N)(function() {
+      return N * f_fact(N - 1);
     });
   });
 
