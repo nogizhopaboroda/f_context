@@ -104,13 +104,38 @@ unique = (input) ->
           duplicates[variable.name] = variable.index
 
 
+      #add destructuring variables for guards conditions
+      additional_condition_variables = []
+      for arg, index in args when arg instanceof Array and arg.length > 0
+        destructuring_happened = false
+        for x, subindex in arg
+          if x.destructuring
+            destructuring_happened = true
+            rest = arg.length - subindex - 1
+            additional_condition_variables.push({
+              name: x()
+              value: "arguments[#{index}].slice(#{subindex}, arguments[#{index}].length - #{rest})"
+            })
+          else
+            if destructuring_happened
+              restindex = arg.length - subindex
+              additional_condition_variables.push({
+                name: x()
+                value: "arguments[#{index}][arguments[#{index}].length - #{restindex}]"
+              })
+            else
+              additional_condition_variables.push({
+                name: x()
+                value: "arguments[#{index}][#{subindex}]"
+              })
+      # / add destructuring variables for guards conditions
 
       conditions = (x for x in local_functions_map when x.name is @fn_name)[functions_calls[@fn_name] - 1].conditions
       if conditions?
         plain_arguments.push("""
-          (function(#{(name for name of duplicates).join(', ')}){
+          (function(#{(name for name of duplicates).concat((item.name for item in additional_condition_variables)).join(', ')}){
             return #{conditions.join(' && ')}
-          })(#{("arguments[#{index}]" for name, index of duplicates).join(', ')})
+          })(#{("arguments[#{index}]" for name, index of duplicates).concat((item.value for item in additional_condition_variables)).join(', ')})
         """)
 
       pseudo[@fn_name] = pseudo[@fn_name] + """

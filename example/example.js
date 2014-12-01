@@ -1,4 +1,6 @@
 (function() {
+  var __slice = [].slice;
+
   this.f_context(function() {
     f_fact(0)(function() {
       return 1;
@@ -60,11 +62,11 @@
     f_flatten([], Acc)(function() {
       return Acc;
     });
-    f_flatten(List, Acc)(where(List[0] instanceof Array)(function() {
-      return f_flatten(tl(List), f_flatten(List[0], Acc));
+    f_flatten([Head].concat(__slice.call(List)), Acc)(where(Head instanceof Array)(function() {
+      return f_flatten(List, f_flatten(Head, Acc));
     }));
-    return f_flatten(List, Acc)(function() {
-      return f_flatten(tl(List), Acc.concat(List[0]));
+    return f_flatten([Head].concat(__slice.call(List)), Acc)(function() {
+      return f_flatten(List, Acc.concat(Head));
     });
   });
 

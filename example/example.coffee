@@ -69,10 +69,11 @@
     f_flatten(List, [])
 
   f_flatten([], Acc) -> Acc
-  f_flatten(List, Acc) where(List[0] instanceof Array) ->
-    f_flatten(tl(List), f_flatten(List[0], Acc))
-  f_flatten(List, Acc) ->
-    f_flatten(tl(List), Acc.concat(List[0]))
+  f_flatten([Head, List...], Acc) where(Head instanceof Array) ->
+    f_flatten(List, f_flatten(Head, Acc))
+
+  f_flatten([Head, List...], Acc) ->
+    f_flatten(List, Acc.concat(Head))
 
 
 #test_container = {}

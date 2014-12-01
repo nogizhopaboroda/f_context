@@ -97,7 +97,7 @@
       functions_calls[this.fn_name]++;
       return (function(_this) {
         return function(fn) {
-          var arg, argument, conditions, destructuring_happened, duplicates, k, name, plain_arguments, rest, restindex, subindex, variable, variables, _i, _j, _k, _len, _len1, _len2, _name1, _ref1;
+          var additional_condition_variables, arg, argument, conditions, destructuring_happened, duplicates, k, name, plain_arguments, rest, restindex, subindex, variable, variables, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _name1, _ref1;
           pseudo[_name1 = _this.fn_name] || (pseudo[_name1] = "");
           plain_arguments = [];
           variables = "";
@@ -170,11 +170,43 @@
               }
             }
           }
+          additional_condition_variables = [];
+          for (index = _l = 0, _len3 = args.length; _l < _len3; index = ++_l) {
+            arg = args[index];
+            if (!(arg instanceof Array && arg.length > 0)) {
+              continue;
+            }
+            destructuring_happened = false;
+            for (subindex = _m = 0, _len4 = arg.length; _m < _len4; subindex = ++_m) {
+              x = arg[subindex];
+              if (x.destructuring) {
+                destructuring_happened = true;
+                rest = arg.length - subindex - 1;
+                additional_condition_variables.push({
+                  name: x(),
+                  value: "arguments[" + index + "].slice(" + subindex + ", arguments[" + index + "].length - " + rest + ")"
+                });
+              } else {
+                if (destructuring_happened) {
+                  restindex = arg.length - subindex;
+                  additional_condition_variables.push({
+                    name: x(),
+                    value: "arguments[" + index + "][arguments[" + index + "].length - " + restindex + "]"
+                  });
+                } else {
+                  additional_condition_variables.push({
+                    name: x(),
+                    value: "arguments[" + index + "][" + subindex + "]"
+                  });
+                }
+              }
+            }
+          }
           conditions = ((function() {
-            var _l, _len3, _results;
+            var _len5, _n, _results;
             _results = [];
-            for (_l = 0, _len3 = local_functions_map.length; _l < _len3; _l++) {
-              x = local_functions_map[_l];
+            for (_n = 0, _len5 = local_functions_map.length; _n < _len5; _n++) {
+              x = local_functions_map[_n];
               if (x.name === this.fn_name) {
                 _results.push(x);
               }
@@ -189,12 +221,28 @@
                 _results.push(name);
               }
               return _results;
+            })()).concat((function() {
+              var _len5, _n, _results;
+              _results = [];
+              for (_n = 0, _len5 = additional_condition_variables.length; _n < _len5; _n++) {
+                item = additional_condition_variables[_n];
+                _results.push(item.name);
+              }
+              return _results;
             })()).join(', ')) + "){\n  return " + (conditions.join(' && ')) + "\n})(" + (((function() {
               var _results;
               _results = [];
               for (name in duplicates) {
                 index = duplicates[name];
                 _results.push("arguments[" + index + "]");
+              }
+              return _results;
+            })()).concat((function() {
+              var _len5, _n, _results;
+              _results = [];
+              for (_n = 0, _len5 = additional_condition_variables.length; _n < _len5; _n++) {
+                item = additional_condition_variables[_n];
+                _results.push(item.value);
               }
               return _results;
             })()).join(', ')) + ")");

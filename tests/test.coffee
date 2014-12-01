@@ -7,8 +7,8 @@ describe "Common", ->
       f_count(List, 0)
 
     f_count([], Iterator) -> Iterator
-    f_count(List, Iterator) ->
-      f_count(tl(List), Iterator + 1)
+    f_count([Head, List...], Iterator) ->
+      f_count(List, Iterator + 1)
 
 
     #array range
@@ -36,8 +36,8 @@ describe "Common", ->
     f_all(_, _, false) -> false
     f_all([], _, _) -> true
 
-    f_all(List, F, Memo) ->
-      f_all(tl(List), F, F(List[0]))
+    f_all([Head, List...], F, Memo) ->
+      f_all(List, F, F(Head))
 
 
     # flatten example
@@ -45,10 +45,11 @@ describe "Common", ->
       f_flatten(List, [])
 
     f_flatten([], Acc) -> Acc
-    f_flatten(List, Acc) where(List[0] instanceof Array) ->
-      f_flatten(tl(List), f_flatten(List[0], Acc))
-    f_flatten(List, Acc) ->
-      f_flatten(tl(List), Acc.concat(List[0]))
+    f_flatten([Head, List...], Acc) where(Head instanceof Array) ->
+      f_flatten(List, f_flatten(Head, Acc))
+
+    f_flatten([Head, List...], Acc) ->
+      f_flatten(List, Acc.concat(Head))
 
 
 
@@ -90,7 +91,7 @@ describe "Pattern matching", ->
 
 
 
-  
+
 describe "Destructuring in arguments", ->
 
   f_context ->
