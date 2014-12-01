@@ -34,8 +34,8 @@ describe "Common", ->
 
 
     #example of function all
-    f_all(List, F) ->
-      f_all(tl(List), F, F(List[0]))
+    f_all([Head, List...], F) ->
+      f_all(List, F, F(Head))
 
     f_all(_, _, false) -> false
     f_all([], _, _) -> true

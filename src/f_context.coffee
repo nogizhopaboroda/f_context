@@ -5,9 +5,6 @@ unique = (input) ->
   value for key, value of output
 
 
-@tl = (array) -> array.slice(1)
-
-
 @f_context = (content, container = this) ->
 
   #private functions

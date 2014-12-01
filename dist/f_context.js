@@ -18,10 +18,6 @@
     return _results;
   };
 
-  this.tl = function(array) {
-    return array.slice(1);
-  };
-
   this.f_context = function(content, container) {
     var base_fn, build_function, functions_calls, i, index, item, local_functions_map, make_variable, param, pseudo, uniq_functions_names, uniq_variables_names, variables_stubs, x, _ref;
     if (container == null) {
