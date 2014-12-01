@@ -66,6 +66,7 @@ dist/f_context.js - текущий релиз
 
 ##### DESTRUCTURING:
 [что это и зачем оно нужно](http://en.wikipedia.org/wiki/Assignment_(computer_science)#Parallel_assignment)
+
 [и еще](http://coffeescript.org/#destructuring)
 
   ```erlang
