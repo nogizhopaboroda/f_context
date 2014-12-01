@@ -90,6 +90,8 @@ unique = (input) ->
                     """
             else
               plain_arguments.push("JSON.stringify(arguments[#{index}]) === '#{JSON.stringify(argument)}'")
+          else if typeof argument is 'string'
+            plain_arguments.push("arguments[#{index}] === '#{argument}'")
           else
             plain_arguments.push("arguments[#{index}] === #{argument}")
 
