@@ -38,7 +38,8 @@ Pattern matching and easy recursion library for CoffeeScript.
     fact(0) -> 1
     fact(N) -> N * fact(N - 1)
   ```
-Посмотреть больше примеров можно [тут](https://github.com/nogizhopaboroda/f_context/blob/master/example/example.coffee).
+Посмотреть больше примеров можно [тут](https://github.com/nogizhopaboroda/f_context/blob/master/example/example.coffee) и [тут](https://github.com/nogizhopaboroda/f_context/tree/master/tests)
+
 А попробовать в действии вот таким образом:
   ```shell
   git clone git@github.com:nogizhopaboroda/f_context.git
