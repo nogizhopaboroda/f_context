@@ -37,15 +37,15 @@
       return Function.apply(null, concated);
     };
     local_functions_map = (function() {
-      var _i, _len, _ref, _ref1, _results;
-      _ref = content.toString().match(/(?:[a-zA-Z0-9_]+)+\(.+\)\(function/ig);
+      var _i, _len, _ref, _ref1, _ref2, _results;
+      _ref = content.toString().match(/(?:[a-zA-Z0-9_]+)+\((.*)?\)\(function/ig);
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
         _results.push({
           name: item.split("(").shift(),
-          params: item.split('(where')[0].split('(function')[0].replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1").replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1").replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1").match(/^.*\((.*)\)/)[1].split(", "),
-          conditions: (_ref1 = item.match(/^.*\((.*)\)\(where\((.*)\)\(function/)) != null ? _ref1[2].split(", ") : void 0
+          params: ((_ref1 = item.split('(where')[0].split('(function')[0].replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1").replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1").replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1").match(/^.*\((.*)?\)/)[1]) != null ? _ref1.split(", ") : void 0) || [],
+          conditions: (_ref2 = item.match(/^.*\((.*)\)\(where\((.*)\)\(function/)) != null ? _ref2[2].split(", ") : void 0
         });
       }
       return _results;

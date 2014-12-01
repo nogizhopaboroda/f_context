@@ -16,14 +16,12 @@ unique = (input) ->
     concated.push(function_body)
     Function.apply(null, concated)
 
-
-  #find local functions and their params
-
   local_functions_map = ({
     name: item.split("(").shift()
-    params: item.split('(where')[0].split('(function')[0].replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1").replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1").replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1").match(/^.*\((.*)\)/)[1].split(", ")
+    params: item.split('(where')[0].split('(function')[0].replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1").replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1").replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1").match(/^.*\((.*)?\)/)[1]?.split(", ") or []
     conditions: item.match(/^.*\((.*)\)\(where\((.*)\)\(function/)?[2].split(", ")
-  } for item in content.toString().match(/(?:[a-zA-Z0-9_]+)+\(.+\)\(function/ig))
+  } for item in content.toString().match(/(?:[a-zA-Z0-9_]+)+\((.*)?\)\(function/ig))
+
 
   #find uniq_functions_names
   uniq_functions_names = unique(item.name for item in local_functions_map)

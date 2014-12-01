@@ -1,13 +1,16 @@
 (function() {
   this.f_context(function() {
-    matching_example_1("foo")(function() {
-      return "foo matches";
+    arguments_test_1()(function() {
+      return "nothing";
     });
-    matching_example_1("bar")(function() {
-      return "bar matches";
+    arguments_test_1(A)(function() {
+      return "one argument: " + A;
     });
-    return matching_example_1(Str)(function() {
-      return "nothing matches";
+    arguments_test_1(A, B)(function() {
+      return "two arguments: " + A + ", " + B;
+    });
+    return arguments_test_1(A, A)(function() {
+      return "two arguments and it is the same: " + A;
     });
   });
 

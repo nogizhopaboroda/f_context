@@ -10,9 +10,10 @@
 @f_context ->
 
 
-  matching_example_1("foo") -> "foo matches"
-  matching_example_1("bar") -> "bar matches"
-  matching_example_1(Str) -> "nothing matches"
+  arguments_test_1() -> "nothing"
+  arguments_test_1(A) -> "one argument: #{A}"
+  arguments_test_1(A, B) -> "two arguments: #{A}, #{B}"
+  arguments_test_1(A, A) -> "two arguments and it is the same: #{A}"
 
   #factorial
 #  f_fact(0) -> 1
