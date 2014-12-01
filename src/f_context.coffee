@@ -7,6 +7,8 @@ unique = (input) ->
 
 @f_context = (content, container = this) ->
 
+  current_module_name = null
+
   #private functions
   build_function = (function_body, function_arguments_names = []) ->
     concated = function_arguments_names.slice()
@@ -142,6 +144,12 @@ unique = (input) ->
         }\n
       """
 
+      if current_module_name? and functions_calls[@fn_name] is 1
+        pseudo[@fn_name] = """
+          var #{@fn_name} = #{current_module_name}['#{@fn_name}'];
+
+        """ + pseudo[@fn_name]
+
       container[@fn_name] = build_function(pseudo[@fn_name])
 
 
@@ -164,6 +172,7 @@ unique = (input) ->
         [destructuring_variable]
       )
       .concat((module_name) ->
+        current_module_name = module_name
         container = container[module_name] = {}
       )
   )

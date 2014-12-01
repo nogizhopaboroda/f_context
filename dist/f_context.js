@@ -19,10 +19,11 @@
   };
 
   this.f_context = function(content, container) {
-    var base_fn, build_function, functions_calls, i, index, item, local_functions_map, make_variable, param, pseudo, uniq_functions_names, uniq_variables_names, variables_stubs, x, _ref;
+    var base_fn, build_function, current_module_name, functions_calls, i, index, item, local_functions_map, make_variable, param, pseudo, uniq_functions_names, uniq_variables_names, variables_stubs, x, _ref;
     if (container == null) {
       container = this;
     }
+    current_module_name = null;
     build_function = function(function_body, function_arguments_names) {
       var concated;
       if (function_arguments_names == null) {
@@ -246,6 +247,9 @@
             })()).join(', ')) + ")");
           }
           pseudo[_this.fn_name] = pseudo[_this.fn_name] + ("if(" + (plain_arguments.join(" && ")) + "){\n  " + variables + "\n  return (" + fn + ")()\n}\n");
+          if ((current_module_name != null) && functions_calls[_this.fn_name] === 1) {
+            pseudo[_this.fn_name] = ("var " + _this.fn_name + " = " + current_module_name + "['" + _this.fn_name + "'];\n") + pseudo[_this.fn_name];
+          }
           return container[_this.fn_name] = build_function(pseudo[_this.fn_name]);
         };
       })(this);
@@ -279,6 +283,7 @@
       destructuring_variable.destructuring = true;
       return [destructuring_variable];
     }).concat(function(module_name) {
+      current_module_name = module_name;
       return container = container[module_name] = {};
     }));
     return true;

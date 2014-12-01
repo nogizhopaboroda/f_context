@@ -12,6 +12,8 @@ f_context_v0_1 ->
 
 f_context_current ->
 
+  module("fact")
+
   f_fact(0) -> 1
   f_fact(N) -> N * f_fact(N - 1)
 
@@ -38,7 +40,7 @@ suite
   .add 'f_context factorial release 0.1', ->
     f_fact_0_1(10)
   .add 'f_context factorial current release', ->
-    f_fact(10)
+    fact.f_fact(10)
   .add 'optimization idea #1', ->
     optimization_1(10)
   .add 'plain recursion style factorial', ->
