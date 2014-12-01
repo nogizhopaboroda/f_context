@@ -1,3 +1,5 @@
+namespace = if module? then module.exports else @
+
 
 unique = (input) ->
   output = {}
@@ -5,7 +7,7 @@ unique = (input) ->
   value for key, value of output
 
 
-@f_context = (content, container = this) ->
+f_context = (content, container = this) ->
 
   current_module_name = null
 
@@ -179,3 +181,7 @@ unique = (input) ->
 
 
   true
+
+
+namespace.f_context = f_context
+namespace.f_context.version = '0.1'

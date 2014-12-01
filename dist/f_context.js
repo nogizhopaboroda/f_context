@@ -1,8 +1,10 @@
 (function() {
-  var unique,
+  var f_context, namespace, unique,
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  namespace = typeof module !== "undefined" && module !== null ? module.exports : this;
 
   unique = function(input) {
     var key, output, value, _i, _ref, _results;
@@ -18,7 +20,7 @@
     return _results;
   };
 
-  this.f_context = function(content, container) {
+  f_context = function(content, container) {
     var base_fn, build_function, current_module_name, functions_calls, i, index, item, local_functions_map, make_variable, param, pseudo, uniq_functions_names, uniq_variables_names, variables_stubs, x, _ref;
     if (container == null) {
       container = this;
@@ -288,5 +290,9 @@
     }));
     return true;
   };
+
+  namespace.f_context = f_context;
+
+  namespace.f_context.version = '0.1';
 
 }).call(this);
