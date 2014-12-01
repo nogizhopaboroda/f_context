@@ -1,7 +1,29 @@
 f_context
 =========
 
-Pattern matching and easy recursion library for CoffeeScript
+Pattern matching and easy recursion library for CoffeeScript.
+
+Table of content:
+
+[Overview](#overview)
+
+[Installation](#installation)
+
+[Pattern matching](#pattern-matching)
+
+[Destructuring](#destructuring)
+
+[Guards](#guards)
+
+[Modules](#modules)
+
+[Real life examples](#real-life-examples)
+
+[How it works](#how-it-works)
+
+[Testing](#testing)
+
+[Benchmark](#benchmark)
 
 
 ##### OVERVIEW:
