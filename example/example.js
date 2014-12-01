@@ -1,5 +1,6 @@
 (function() {
   this.f_context(function() {
+    module("examples");
     arguments_test_1()(function() {
       return "nothing";
     });

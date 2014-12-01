@@ -9,6 +9,7 @@
 
 @f_context ->
 
+  module("examples")
 
   arguments_test_1() -> "nothing"
   arguments_test_1(A) -> "one argument: #{A}"

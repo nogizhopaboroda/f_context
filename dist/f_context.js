@@ -254,7 +254,7 @@
         };
       })(this);
     };
-    build_function(content.toString().replace(/\n/g, ' ').replace(/function \(\) \{(.*) \}$/gmi, "$1"), uniq_functions_names.concat(uniq_variables_names).concat(['where']).concat(['__slice'])).apply(null, ((function() {
+    build_function(content.toString().replace(/\n/g, ' ').replace(/function \(\) \{(.*) \}$/gmi, "$1"), uniq_functions_names.concat(uniq_variables_names).concat(['where']).concat(['__slice']).concat(['module'])).apply(null, ((function() {
       var _i, _len, _results;
       _results = [];
       for (_i = 0, _len = uniq_functions_names.length; _i < _len; _i++) {
@@ -282,6 +282,8 @@
       })(this);
       destructuring_variable.destructuring = true;
       return [destructuring_variable];
+    }).concat(function(module_name) {
+      return container = container[module_name] = {};
     }));
     return true;
   };

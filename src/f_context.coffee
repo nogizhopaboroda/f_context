@@ -155,6 +155,7 @@ unique = (input) ->
       .concat(uniq_variables_names)
       .concat(['where'])
       .concat(['__slice'])
+      .concat(['module'])
   ).apply(
     null,
     (base_fn.bind({ fn_name: item }) for item in uniq_functions_names)
@@ -164,6 +165,9 @@ unique = (input) ->
         class destructuring_variable extends @
         destructuring_variable.destructuring = true
         [destructuring_variable]
+      )
+      .concat((module_name) ->
+        container = container[module_name] = {}
       )
   )
 
