@@ -1,19 +1,23 @@
-#bugs
-# - __slice is undefined inside executed function
-
-
 @f_context ->
 
   module("examples")
 
-  arguments_test_1() -> "nothing"
-  arguments_test_1(A) -> "one argument: #{A}"
-  arguments_test_1(A, B) -> "two arguments: #{A}, #{B}"
-  arguments_test_1(A, A) -> "two arguments and it is the same: #{A}"
-
   #factorial
   f_fact(0) -> 1
   f_fact(N) -> N * f_fact(N - 1)
+
+
+  #fibonacci range
+  fibonacci_range(Count) ->
+    fibonacci_range(Count, 0, [])
+
+  fibonacci_range(Count, Count, Accum) -> Accum
+
+  fibonacci_range(Count, Iterator, Accum) where(Iterator is 0 or Iterator is 1) ->
+    fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator))
+
+  fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
+    fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B))
 
 
   #format price
@@ -32,8 +36,8 @@
     f_count(List, 0)
 
   f_count([], Iterator) -> Iterator
-  f_count(List, Iterator) ->
-    f_count(tl(List), Iterator + 1)
+  f_count([Head, List...], Iterator) ->
+    f_count(List, Iterator + 1)
 
 
   #array range
@@ -77,8 +81,11 @@
     f_flatten(List, Acc.concat(Head))
 
 
-#test_container = {}
-#@functional_context(->
-#  fizbaz(5) -> 'pyat'
-#, test_container)
+  #reduce example
+  f_reduce(List, F) ->
+    f_reduce(List, F, 0)
 
+  f_reduce([], _, Memo) -> Memo
+
+  f_reduce([X, List...], F, Memo) ->
+    f_reduce(List, F, F(X, Memo))

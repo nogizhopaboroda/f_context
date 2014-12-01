@@ -3,23 +3,23 @@
 
   this.f_context(function() {
     module("examples");
-    arguments_test_1()(function() {
-      return "nothing";
-    });
-    arguments_test_1(A)(function() {
-      return "one argument: " + A;
-    });
-    arguments_test_1(A, B)(function() {
-      return "two arguments: " + A + ", " + B;
-    });
-    arguments_test_1(A, A)(function() {
-      return "two arguments and it is the same: " + A;
-    });
     f_fact(0)(function() {
       return 1;
     });
     f_fact(N)(function() {
       return N * f_fact(N - 1);
+    });
+    fibonacci_range(Count)(function() {
+      return fibonacci_range(Count, 0, []);
+    });
+    fibonacci_range(Count, Count, Accum)(function() {
+      return Accum;
+    });
+    fibonacci_range(Count, Iterator, Accum)(where(Iterator === 0 || Iterator === 1)(function() {
+      return fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator));
+    }));
+    fibonacci_range(Count, Iterator, __slice.call(AccumHead).concat([A], [B]))(function() {
+      return fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B));
     });
     f_format(Str)(function() {
       return f_format(Str, "");
@@ -36,8 +36,8 @@
     f_count([], Iterator)(function() {
       return Iterator;
     });
-    f_count(List, Iterator)(function() {
-      return f_count(tl(List), Iterator + 1);
+    f_count([Head].concat(__slice.call(List)), Iterator)(function() {
+      return f_count(List, Iterator + 1);
     });
     f_range(I)(function() {
       return f_range(I, 0, []);
@@ -78,8 +78,17 @@
     f_flatten([Head].concat(__slice.call(List)), Acc)(where(Head instanceof Array)(function() {
       return f_flatten(List, f_flatten(Head, Acc));
     }));
-    return f_flatten([Head].concat(__slice.call(List)), Acc)(function() {
+    f_flatten([Head].concat(__slice.call(List)), Acc)(function() {
       return f_flatten(List, Acc.concat(Head));
+    });
+    f_reduce(List, F)(function() {
+      return f_reduce(List, F, 0);
+    });
+    f_reduce([], _, Memo)(function() {
+      return Memo;
+    });
+    return f_reduce([X].concat(__slice.call(List)), F, Memo)(function() {
+      return f_reduce(List, F, F(X, Memo));
     });
   });
 

@@ -6,6 +6,18 @@ describe "Common", ->
     f_fact(0) -> 1
     f_fact(N) -> N * f_fact(N - 1)
 
+    #fibonacci range
+    fibonacci_range(Count) ->
+      fibonacci_range(Count, 0, [])
+
+    fibonacci_range(Count, Count, Accum) -> Accum
+
+    fibonacci_range(Count, Iterator, Accum) where(Iterator is 0 or Iterator is 1) ->
+      fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator))
+
+    fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
+      fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B))
+
     #array elements count
     f_count(List) ->
       f_count(List, 0)
