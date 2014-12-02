@@ -87,8 +87,35 @@
     f_reduce([], _, Memo)(function() {
       return Memo;
     });
-    return f_reduce([X].concat(__slice.call(List)), F, Memo)(function() {
+    f_reduce([X].concat(__slice.call(List)), F, Memo)(function() {
       return f_reduce(List, F, F(X, Memo));
+    });
+    f_qsort([])(function() {
+      return [];
+    });
+    return f_qsort([Pivot].concat(__slice.call(Rest)))(function() {
+      var X, Y;
+      return f_qsort((function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = Rest.length; _i < _len; _i++) {
+          X = Rest[_i];
+          if (X < Pivot) {
+            _results.push(X);
+          }
+        }
+        return _results;
+      })()).concat(Pivot).concat(f_qsort((function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = Rest.length; _i < _len; _i++) {
+          Y = Rest[_i];
+          if (Y >= Pivot) {
+            _results.push(Y);
+          }
+        }
+        return _results;
+      })()));
     });
   });
 

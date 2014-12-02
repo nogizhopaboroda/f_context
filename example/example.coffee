@@ -89,3 +89,8 @@
 
   f_reduce([X, List...], F, Memo) ->
     f_reduce(List, F, F(X, Memo))
+
+  #quick sort example
+  f_qsort([]) -> []
+  f_qsort([Pivot, Rest...]) ->
+    f_qsort((X for X in Rest when X < Pivot)).concat(Pivot).concat(f_qsort((Y for Y in Rest when Y >= Pivot)))
