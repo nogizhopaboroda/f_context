@@ -55,7 +55,9 @@ f_context = (content, container = this) ->
     functions_calls[@fn_name]++
     (fn) =>
 
-      pseudo[@fn_name] or= ""
+      pseudo[@fn_name] or= """
+        var __slice = [].slice;
+      """
 
       plain_arguments = []
       variables = ""

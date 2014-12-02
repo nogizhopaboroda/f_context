@@ -13,10 +13,10 @@ describe "Common", ->
     fibonacci_range(Count, Count, Accum) -> Accum
 
     fibonacci_range(Count, Iterator, Accum) where(Iterator is 0 or Iterator is 1) ->
-      fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator))
+      fibonacci_range(Count, Iterator + 1, [Accum..., Iterator])
 
     fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
-      fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B))
+      fibonacci_range(Count, Iterator + 1, [AccumHead..., A, B, A + B])
 
     #array elements count
     f_count(List) ->
@@ -33,7 +33,7 @@ describe "Common", ->
 
     f_range(I, I, Accum) -> Accum
     f_range(I, Iterator, Accum) ->
-      f_range(I, Iterator + 1, Accum.concat(Iterator))
+      f_range(I, Iterator + 1, [Accum..., Iterator])
 
 
     #test guards
@@ -42,7 +42,7 @@ describe "Common", ->
 
     f_range_guard(I, Iterator, Accum) where(I == Iterator) -> Accum
     f_range_guard(I, Iterator, Accum) ->
-      f_range_guard(I, Iterator + 1, Accum.concat(Iterator))
+      f_range_guard(I, Iterator + 1, [Accum..., Iterator])
 
 
     #example of function all
@@ -65,11 +65,15 @@ describe "Common", ->
       f_flatten(List, f_flatten(Head, Acc))
 
     f_flatten([Head, List...], Acc) ->
-      f_flatten(List, Acc.concat(Head))
+      f_flatten(List, [Acc..., Head])
 
 
   it('computes factorial', ->
     expect(f_fact(5)).toBe(120)
+  )
+
+  it('computes fibonacci range', ->
+    expect(fibonacci_range(10)).toEqual([0, 1, 1, 2, 3, 5, 8, 13, 21, 34])
   )
 
   it('computes count', ->

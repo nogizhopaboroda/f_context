@@ -79,7 +79,7 @@
       return f_flatten(List, f_flatten(Head, Acc));
     }));
     f_flatten([Head].concat(__slice.call(List)), Acc)(function() {
-      return f_flatten(List, Acc.concat(Head));
+      return f_flatten(List, __slice.call(Acc).concat([Head]));
     });
     f_reduce(List, F)(function() {
       return f_reduce(List, F, 0);

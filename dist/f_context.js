@@ -97,7 +97,7 @@
       return (function(_this) {
         return function(fn) {
           var additional_condition_variables, arg, argument, conditions, destructuring_happened, duplicates, k, name, plain_arguments, rest, restindex, subindex, variable, variables, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _name1, _ref1;
-          pseudo[_name1 = _this.fn_name] || (pseudo[_name1] = "");
+          pseudo[_name1 = _this.fn_name] || (pseudo[_name1] = "var __slice = [].slice;");
           plain_arguments = [];
           variables = "";
           for (index = _i = 0, _len = args.length; _i < _len; index = ++_i) {

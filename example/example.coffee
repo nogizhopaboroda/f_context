@@ -78,7 +78,7 @@
     f_flatten(List, f_flatten(Head, Acc))
 
   f_flatten([Head, List...], Acc) ->
-    f_flatten(List, Acc.concat(Head))
+    f_flatten(List, [Acc..., Head])
 
 
   #reduce example
