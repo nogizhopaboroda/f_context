@@ -182,7 +182,7 @@ dist/f_context.js - текущий релиз
   ```
 
 ##### REAL LIFE EXAMPLES:
-Примеры реализации функций reduce и flatten:
+Примеры реализаций функций reduce и quick sort:
   ```erlang
   f_reduce(List, F) ->
     f_reduce(List, F, 0)
@@ -194,15 +194,10 @@ dist/f_context.js - текущий релиз
   ```
 
   ```erlang
-  f_flatten(List) ->
-    f_flatten(List, [])
-
-  f_flatten([], Acc) -> Acc
-  f_flatten([Head, List...], Acc) where(Head instanceof Array) ->
-    f_flatten(List, f_flatten(Head, Acc))
-
-  f_flatten([Head, List...], Acc) ->
-    f_flatten(List, Acc.concat(Head))
+  f_qsort([]) -> []
+  
+  f_qsort([Pivot, Rest...]) ->
+    f_qsort((X for X in Rest when X < Pivot)).concat(Pivot).concat(f_qsort((Y for Y in Rest when Y >= Pivot)))
   ```
   
 ##### HOW IT WORKS:
