@@ -14,10 +14,10 @@
   fibonacci_range(Count, Count, Accum) -> Accum
 
   fibonacci_range(Count, Iterator, Accum) where(Iterator is 0 or Iterator is 1) ->
-    fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator))
+    fibonacci_range(Count, Iterator + 1, [Accum..., Iterator])
 
   fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
-    fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B))
+    fibonacci_range(Count, Iterator + 1, [AccumHead..., A, B, A + B])
 
 
   #format price
@@ -46,7 +46,7 @@
 
   f_range(I, I, Accum) -> Accum
   f_range(I, Iterator, Accum) ->
-    f_range(I, Iterator + 1, Accum.concat(Iterator))
+    f_range(I, Iterator + 1, [Accum..., Iterator])
 
 
   #test guards
@@ -55,7 +55,7 @@
 
   f_range_guard(I, Iterator, Accum) where(I == Iterator) -> Accum
   f_range_guard(I, Iterator, Accum) ->
-    f_range_guard(I, Iterator + 1, Accum.concat(Iterator))
+    f_range_guard(I, Iterator + 1, [Accum..., Iterator])
 
 
   #example of function all
@@ -93,4 +93,4 @@
   #quick sort example
   f_qsort([]) -> []
   f_qsort([Pivot, Rest...]) ->
-    f_qsort((X for X in Rest when X < Pivot)).concat(Pivot).concat(f_qsort((Y for Y in Rest when Y >= Pivot)))
+    [f_qsort((X for X in Rest when X < Pivot))..., Pivot, f_qsort((Y for Y in Rest when Y >= Pivot))...]

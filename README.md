@@ -46,10 +46,10 @@ Pattern matching and easy recursion library for CoffeeScript.
   cd f_context/example
   open example.html
   ```
-  
+
 ###### Библиотека не меняет никаких прототипов, ничего не eval'ит и никак не мешает нормальному исполнению другого кода в приложении
-  
-###### В большинстве примеров ниже функции начинаются с префикса f_. Это просто вкусовщина и писать его не обязательно. 
+
+###### В большинстве примеров ниже функции начинаются с префикса f_. Это просто вкусовщина и писать его не обязательно.
 
 ##### INSTALLATION:
   ```html
@@ -61,7 +61,7 @@ Pattern matching and easy recursion library for CoffeeScript.
   ```shell
   git clone git@github.com:nogizhopaboroda/f_context.git
   ```
-  
+
 dist/f_context.js - текущий релиз
 
 Библиотечка сейчас написана непойми-как и нуждается в жестком рефакторинге чтобы можно было легко понять как она работает. Но работает и проходит тесты :)
@@ -78,7 +78,7 @@ dist/f_context.js - текущий релиз
   matching_example_1("bar") -> "bar matches"
   matching_example_1(Str) -> "nothing matches, argument: #{Str}"
   ```
-  
+
 Пример паттерн матчинга для двух аргументов:
   ```erlang
   matching_example_1_1("foo", "bar") -> "foo and bar matches"
@@ -86,13 +86,13 @@ dist/f_context.js - текущий релиз
   matching_example_1_1("bar", "bar") -> "bar and bar matches"
   matching_example_1_1(Str, Str2) -> "nothing matches, arguments: #{Str}, #{Str2}"
   ```
-  
+
 Результат:
   ```js
   matching_example_1("foo") //returns "foo matches"
   matching_example_1("bar") //returns "bar matches"
   matching_example_1("baz") //returns "nothing matches, argument: baz"
-  
+
   matching_example_1_1("foo", "bar") //returns "foo and bar matches"
   matching_example_1_1("bar", "bla") //returns "bar and bla matches"
   matching_example_1_1("bar", "bar") //returns "bar and bar matches"
@@ -108,12 +108,12 @@ dist/f_context.js - текущий релиз
   test_destruct_1([Head, Tail...]) -> {Head, Tail}
   test_destruct_1_1([Head, Head1, Tail...]) -> {Head, Head1, Tail}
   ```
-  
+
   ```erlang
   test_destruct_2([Head..., Last]) -> {Head, Last}
   test_destruct_2_1([Head..., Last, Last1]) -> {Head, Last, Last1}
   ```
-  
+
   ```erlang
   test_destruct_3([Head, Middle..., Last]) -> {Head, Middle, Last}
   test_destruct_3_1([Head, Head2, Middle..., Last, Last2]) -> {Head, Head2, Middle, Last, Last2}
@@ -125,9 +125,9 @@ dist/f_context.js - текущий релиз
 Гварды задаются через директиву where(%condition%).
 
 В гвардах можно задавать более гибкое сравнение. Пример вычисления ряда Фибоначчи:
-  
+
   без гвардов
-  
+
   ```erlang
   fibonacci_range(Count) ->
     fibonacci_range(Count, 0, [])
@@ -135,17 +135,17 @@ dist/f_context.js - текущий релиз
   fibonacci_range(Count, Count, Accum) -> Accum
 
   fibonacci_range(Count, 0, Accum) ->
-    fibonacci_range(Count, 1, Accum.concat(0))
+    fibonacci_range(Count, 1, [Accum..., 0])
 
   fibonacci_range(Count, 1, Accum) ->
-    fibonacci_range(Count, 2, Accum.concat(1))
+    fibonacci_range(Count, 2, [Accum..., 1])
 
   fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
-    fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B))
+    fibonacci_range(Count, Iterator + 1, [AccumHead..., A, B, A + B])
   ```
-  
+
   с гвардами
-  
+
   ```erlang
   fibonacci_range(Count) ->
     fibonacci_range(Count, 0, [])
@@ -153,29 +153,29 @@ dist/f_context.js - текущий релиз
   fibonacci_range(Count, Count, Accum) -> Accum
 
   fibonacci_range(Count, Iterator, Accum) where(Iterator is 0 or Iterator is 1) ->
-    fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator))
+    fibonacci_range(Count, Iterator + 1, [Accum..., Iterator])
 
   fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
-    fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B))
+    fibonacci_range(Count, Iterator + 1, [AccumHead..., A, B, A + B])
   ```
 
 ##### MODULES:
 
-По умолчанию все сгенерированные библиотекой функции находятся в window. 
+По умолчанию все сгенерированные библиотекой функции находятся в window.
 Директива module задает модуль, в котором они будут находиться
 
   ```erlang
   f_context ->
     module("examples")
-  
+
     f_range(I) ->
       f_range(I, 0, [])
-  
+
     f_range(I, I, Accum) -> Accum
     f_range(I, Iterator, Accum) ->
-      f_range(I, Iterator + 1, Accum.concat(Iterator))
+      f_range(I, Iterator + 1, [Accum..., Iterator])
   ```
-  
+
 Теперь функция f_range доступна в модуле examples, и вызывается вот так:
   ```js
   examples.f_range(10)
@@ -195,11 +195,10 @@ dist/f_context.js - текущий релиз
 
   ```erlang
   f_qsort([]) -> []
-  
   f_qsort([Pivot, Rest...]) ->
-    f_qsort((X for X in Rest when X < Pivot)).concat(Pivot).concat(f_qsort((Y for Y in Rest when Y >= Pivot)))
+    [f_qsort((X for X in Rest when X < Pivot))..., Pivot, f_qsort((Y for Y in Rest when Y >= Pivot))...]
   ```
-  
+
 ##### HOW IT WORKS:
 Лучше не читать.
 
@@ -217,8 +216,8 @@ dist/f_context.js - текущий релиз
     return N * fact(N - 1);
   });
   ```
-  
-Как видно, это абсолютно валидный js, а значит его можно выполнить, правда с ошибками. 
+
+Как видно, это абсолютно валидный js, а значит его можно выполнить, правда с ошибками.
 
 Но если написать вот такое:
   ```erlang
@@ -226,7 +225,7 @@ dist/f_context.js - текущий релиз
     fact(0) -> 1
     fact(N) -> N * fact(N - 1)
   ```
-  
+
 то получим на выходе:
 
   ```js
@@ -239,14 +238,14 @@ dist/f_context.js - текущий релиз
     });
   });
   ```
-  
+
 Это значит что fact будет исполняться в контексте function_wrapper, которая может проанализировать приходящую ей параметром функцию перед исполнением на предмет недостающих функций и переменных и передать их в контекст исполнения. А значит у нас есть все данные чтобы сконструировать новый fact с нужными проверками и положить его в какой-то контейнер, например window.
 
 ##### TESTING:
   ```shell
   gulp test
   ```
-  
+
 ##### BENCHMARK:
   ```shell
   coffee bench/bench.coffee

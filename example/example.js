@@ -16,10 +16,10 @@
       return Accum;
     });
     fibonacci_range(Count, Iterator, Accum)(where(Iterator === 0 || Iterator === 1)(function() {
-      return fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator));
+      return fibonacci_range(Count, Iterator + 1, __slice.call(Accum).concat([Iterator]));
     }));
     fibonacci_range(Count, Iterator, __slice.call(AccumHead).concat([A], [B]))(function() {
-      return fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B));
+      return fibonacci_range(Count, Iterator + 1, __slice.call(AccumHead).concat([A], [B], [A + B]));
     });
     f_format(Str)(function() {
       return f_format(Str, "");
@@ -46,7 +46,7 @@
       return Accum;
     });
     f_range(I, Iterator, Accum)(function() {
-      return f_range(I, Iterator + 1, Accum.concat(Iterator));
+      return f_range(I, Iterator + 1, __slice.call(Accum).concat([Iterator]));
     });
     f_range_guard(I)(function() {
       return f_range_guard(I, 0, []);
@@ -55,7 +55,7 @@
       return Accum;
     }));
     f_range_guard(I, Iterator, Accum)(function() {
-      return f_range_guard(I, Iterator + 1, Accum.concat(Iterator));
+      return f_range_guard(I, Iterator + 1, __slice.call(Accum).concat([Iterator]));
     });
     f_all([Head].concat(__slice.call(List)), F)(function() {
       return f_all(List, F, F(Head));
@@ -95,27 +95,27 @@
     });
     return f_qsort([Pivot].concat(__slice.call(Rest)))(function() {
       var X, Y;
-      return f_qsort((function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = Rest.length; _i < _len; _i++) {
-          X = Rest[_i];
-          if (X < Pivot) {
-            _results.push(X);
+      return __slice.call(f_qsort((function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = Rest.length; _i < _len; _i++) {
+            X = Rest[_i];
+            if (X < Pivot) {
+              _results.push(X);
+            }
           }
-        }
-        return _results;
-      })()).concat(Pivot).concat(f_qsort((function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = Rest.length; _i < _len; _i++) {
-          Y = Rest[_i];
-          if (Y >= Pivot) {
-            _results.push(Y);
+          return _results;
+        })())).concat([Pivot], __slice.call(f_qsort((function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = Rest.length; _i < _len; _i++) {
+            Y = Rest[_i];
+            if (Y >= Pivot) {
+              _results.push(Y);
+            }
           }
-        }
-        return _results;
-      })()));
+          return _results;
+        })())));
     });
   });
 
