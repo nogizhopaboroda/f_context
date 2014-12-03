@@ -1,134 +1,144 @@
 f_context
 =========
 
-Pattern matching and easy recursion library for CoffeeScript.
-
+Simple functional programming library for CoffeeScript.
 
 1. [Overview](#overview)
-
 2. [Installation](#installation)
-
 3. [Pattern matching](#pattern-matching)
-
 4. [Destructuring](#destructuring)
-
 5. [Guards](#guards)
-
 6. [Modules](#modules)
-
 7. [Real life examples](#real-life-examples)
-
 8. [How it works](#how-it-works)
-
 9. [Testing](#testing)
-
 10. [Benchmark](#benchmark)
 
+Overview
+--------
 
+Those who had some experience with functional programming languages such as
+[Erlang](http://erlang.org) did notice its excessive pattern matching abilities:
 
-##### OVERVIEW:
-Тем, кто сталкивался с [функциональными языками программирования](https://ru.wikipedia.org/wiki/Функциональное_программирование) наверняка знакома такая конструкция:
-  ```erlang
-  fact(0) -> 1
-  fact(N) -> N * fact(N - 1)
-  ```
-Это один и классических примеров ФП - вычисление факториала. Теперь это можно делать и на coffeescript'е с библиотекой f_context, просто добавляя "f_context ->" и немного табов, например:
-  ```erlang
-  f_context ->
+```erlang
+fact(0) -> 1
+fact(N) -> N * fact(N - 1)
+```
+
+This is a classical implementation of factorial compilation using patter matching.
+Now you can use code it exactly the same style, but in CoffeeScript using **f_context** wrapper function. For example: 
+
+```coffee
+f_context ->
     fact(0) -> 1
     fact(N) -> N * fact(N - 1)
-  ```
-Посмотреть больше примеров можно [тут](https://github.com/nogizhopaboroda/f_context/blob/master/example/example.coffee) и [тут](https://github.com/nogizhopaboroda/f_context/tree/master/tests)
+```
 
-А попробовать в действии вот таким образом:
-  ```shell
-  git clone git@github.com:nogizhopaboroda/f_context.git
-  cd f_context/example
-  open example.html
-  ```
+[See more examples](https://github.com/nogizhopaboroda/f_context/blob/master/example/example.coffee).
 
-###### Библиотека не меняет никаких прототипов, ничего не eval'ит и никак не мешает нормальному исполнению другого кода в приложении
+Try it yourself:
 
-###### В большинстве примеров ниже функции начинаются с префикса f_. Это просто вкусовщина и писать его не обязательно.
+```shell
+git clone git@github.com:nogizhopaboroda/f_context.git
+cd f_context/example
+open example.html
+```
 
-##### INSTALLATION:
-  ```html
-  <script src="https://raw.githubusercontent.com/nogizhopaboroda/f_context/master/dist/f_context.js"></script>
-  ```
+Disclaimer
+----------
 
-  или
+This doesn't contain any hacks and evals whatsoever.
 
-  ```shell
-  git clone git@github.com:nogizhopaboroda/f_context.git
-  ```
+Functions in examples are prefixed with `f_` so it is easy to distinguish
+between functional and imperative counterparts, i.e. `f_` prefix is not enforced.
 
-dist/f_context.js - текущий релиз
+Although it needs some refactoring, it works and
+[passes tests](https://github.com/nogizhopaboroda/f_context/tree/master/tests).
 
-Библиотечка сейчас написана непойми-как и нуждается в жестком рефакторинге чтобы можно было легко понять как она работает. Но работает и проходит тесты :)
+Installation
+------------
 
-### ЧТО УМЕЕТ БИБЛИОТЕКА:
+You can link directly to this repo:
 
-##### PATTERN MATCHING:
+```html
+<script src="https://raw.githubusercontent.com/nogizhopaboroda/f_context/master/dist/f_context.js"></script>
+```
 
-[что это и зачем оно нужно](https://en.wikipedia.org/wiki/Pattern_matching)
+Or you can clone the repo instead: the release resides in `dist/f_context.js` file.
 
-Пример паттерн матчинга для одного аргумента:
-  ```erlang
-  matching_example_1("foo") -> "foo matches"
-  matching_example_1("bar") -> "bar matches"
-  matching_example_1(Str) -> "nothing matches, argument: #{Str}"
-  ```
+```shell
+git clone git@github.com:nogizhopaboroda/f_context.git
+```
 
-Пример паттерн матчинга для двух аргументов:
-  ```erlang
-  matching_example_1_1("foo", "bar") -> "foo and bar matches"
-  matching_example_1_1("bar", "bla") -> "bar and bla matches"
-  matching_example_1_1("bar", "bar") -> "bar and bar matches"
-  matching_example_1_1(Str, Str2) -> "nothing matches, arguments: #{Str}, #{Str2}"
-  ```
+NPM package is not avaliable yet.
 
-Результат:
-  ```js
-  matching_example_1("foo") //returns "foo matches"
-  matching_example_1("bar") //returns "bar matches"
-  matching_example_1("baz") //returns "nothing matches, argument: baz"
+Features
+--------
 
-  matching_example_1_1("foo", "bar") //returns "foo and bar matches"
-  matching_example_1_1("bar", "bla") //returns "bar and bla matches"
-  matching_example_1_1("bar", "bar") //returns "bar and bar matches"
-  matching_example_1_1("baz", "bla") //returns "nothing matches, arguments: baz, bla"
-  ```
+### Pattern matching
 
-##### DESTRUCTURING:
-[что это и зачем оно нужно](http://en.wikipedia.org/wiki/Assignment_(computer_science)#Parallel_assignment)
+[Wikipedia](https://en.wikipedia.org/wiki/Pattern_matching)
 
-[и еще](http://coffeescript.org/#destructuring)
+Example with one argument being pattern matched:
 
-  ```erlang
-  test_destruct_1([Head, Tail...]) -> {Head, Tail}
-  test_destruct_1_1([Head, Head1, Tail...]) -> {Head, Head1, Tail}
-  ```
+```coffee
+f_context ->
+    matching_example_1("foo") -> "foo matches"
+    matching_example_1("bar") -> "bar matches"
+    matching_example_1(Str)   -> "nothing matches, argument: #{Str}"
 
-  ```erlang
-  test_destruct_2([Head..., Last]) -> {Head, Last}
-  test_destruct_2_1([Head..., Last, Last1]) -> {Head, Last, Last1}
-  ```
+matching_example_1("foo") #=> "foo matches"
+matching_example_1("bar") #=> "bar matches"
+matching_example_1("baz") #=> "nothing matches, argument: baz"
+```
 
-  ```erlang
-  test_destruct_3([Head, Middle..., Last]) -> {Head, Middle, Last}
-  test_destruct_3_1([Head, Head2, Middle..., Last, Last2]) -> {Head, Head2, Middle, Last, Last2}
-  ```
+The same, but with two arguments:
 
-##### GUARDS:
-[что это и зачем оно нужно](http://en.wikipedia.org/wiki/Guard_(computer_science))
+```coffee
+f_context ->
+    matching_example_1_1("foo", "bar") -> "foo and bar matches"
+    matching_example_1_1("bar", "bla") -> "bar and bla matches"
+    matching_example_1_1("bar", "bar") -> "bar and bar matches"
+    matching_example_1_1(Str, Str2)    -> "no matching pairs, arguments: #{Str}, #{Str2}"
+  
+matching_example_1_1("foo", "bar") #=> "foo and bar matches"
+matching_example_1_1("bar", "bla") #=> "bar and bla matches"
+matching_example_1_1("bar", "bar") #=> "bar and bar matches"
+matching_example_1_1("baz", "bla") #=> "no matching pairs, arguments: baz, bla"
+```
+>>>>>>> Translate README.md to English
 
-Гварды задаются через директиву where(%condition%).
+### Destructuring
 
-В гвардах можно задавать более гибкое сравнение. Пример вычисления ряда Фибоначчи:
+[Wikipedia](http://en.wikipedia.org/wiki/Assignment_(computer_science)#Parallel_assignment)
 
-  без гвардов
+```coffee
+f_context ->
+    test_destruct_1([Head, Tail...]) -> {Head, Tail}
+    test_destruct_1_1([Head, Head1, Tail...]) -> {Head, Head1, Tail}
+```
+  
+```coffee
+f_context ->
+    test_destruct_2([Head..., Last]) -> {Head, Last}
+    test_destruct_2_1([Head..., Last, Last1]) -> {Head, Last, Last1}
+```
+  
+```coffee
+f_context ->
+    test_destruct_3([Head, Middle..., Last]) -> {Head, Middle, Last}
+    test_destruct_3_1([Head, Head2, Middle..., Last, Last2]) -> {Head, Head2, Middle, Last, Last2}
+```
 
-  ```erlang
+### Guards
+
+[Wikipedia](http://en.wikipedia.org/wiki/Guard_(computer_science))
+
+Use `where(%condition%)` syntax to define a guard.
+For example: here is a function that produces fibbonaci sequence, implemented without guards:
+  
+```coffee
+f_context ->
   fibonacci_range(Count) ->
     fibonacci_range(Count, 0, [])
 
@@ -144,28 +154,30 @@ dist/f_context.js - текущий релиз
     fibonacci_range(Count, Iterator + 1, [AccumHead..., A, B, A + B])
   ```
 
-  с гвардами
+Using guards you can make it considerably shorter:
+  
+```coffee
+f_context ->
+    fibonacci_range(Count) ->
+      fibonacci_range(Count, 0, [])
 
-  ```erlang
-  fibonacci_range(Count) ->
-    fibonacci_range(Count, 0, [])
+    fibonacci_range(Count, Count, Accum) -> Accum
 
-  fibonacci_range(Count, Count, Accum) -> Accum
+    fibonacci_range(Count, Iterator, Accum) where(Iterator is 0 or Iterator is 1) ->
+      fibonacci_range(Count, Iterator + 1, Accum.concat(Iterator))
 
-  fibonacci_range(Count, Iterator, Accum) where(Iterator is 0 or Iterator is 1) ->
-    fibonacci_range(Count, Iterator + 1, [Accum..., Iterator])
+    fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
+      fibonacci_range(Count, Iterator + 1, AccumHead.concat(A, B).concat(A + B))
+```
 
-  fibonacci_range(Count, Iterator, [AccumHead..., A, B]) ->
-    fibonacci_range(Count, Iterator + 1, [AccumHead..., A, B, A + B])
-  ```
+### Modules
 
-##### MODULES:
+All functions generated by library are placed in `window` object by default.
+Using `module` directive you can specify the name of the object module
+that will contain your functions:
 
-По умолчанию все сгенерированные библиотекой функции находятся в window.
-Директива module задает модуль, в котором они будут находиться
-
-  ```erlang
-  f_context ->
+```coffee
+f_context ->
     module("examples")
 
     f_range(I) ->
@@ -173,17 +185,18 @@ dist/f_context.js - текущий релиз
 
     f_range(I, I, Accum) -> Accum
     f_range(I, Iterator, Accum) ->
-      f_range(I, Iterator + 1, [Accum..., Iterator])
-  ```
+      f_range(I, Iterator + 1, Accum.concat(Iterator))
 
-Теперь функция f_range доступна в модуле examples, и вызывается вот так:
-  ```js
-  examples.f_range(10)
-  ```
+examples.f_range(10) #=> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+```
+  
+Real life examples
+------------------
 
-##### REAL LIFE EXAMPLES:
-Примеры реализаций функций reduce и quick sort:
-  ```erlang
+Here are reduce and qsort functions implemented using *f_context*:
+
+```coffee
+f_context ->
   f_reduce(List, F) ->
     f_reduce(List, F, 0)
 
@@ -191,62 +204,75 @@ dist/f_context.js - текущий релиз
 
   f_reduce([X, List...], F, Memo) ->
     f_reduce(List, F, F(X, Memo))
-  ```
+```
 
-  ```erlang
+```coffee
+f_context ->
   f_qsort([]) -> []
   f_qsort([Pivot, Rest...]) ->
     [f_qsort((X for X in Rest when X < Pivot))..., Pivot, f_qsort((Y for Y in Rest when Y >= Pivot))...]
-  ```
+```
 
-##### HOW IT WORKS:
-Лучше не читать.
+How it works
+------------
 
-  ```erlang
-  fact(0) -> 1
-  fact(N) -> N * fact(N - 1)
-  ```
-Если скомпилировать приведенный выше кусок кода в coffeescript, получим вот такой js код:
-  ```js
-  fact(0)(function() {
+You'd better skip this.
+
+```coffee
+fact(0) -> 1
+fact(N) -> N * fact(N - 1)
+```
+
+If you compile this from CoffeeScript to JS, you'll get this:
+
+```js
+fact(0)(function() {
     return 1;
-  });
+});
 
-  fact(N)(function() {
+fact(N)(function() {
     return N * fact(N - 1);
-  });
-  ```
+});
+```
 
-Как видно, это абсолютно валидный js, а значит его можно выполнить, правда с ошибками.
+As you can see this is absolutely valid, and that means you can evaluate it.
+Though now it probably will throw an error.
 
-Но если написать вот такое:
-  ```erlang
-  function_wrapper ->
+But if you wrap it in a function, like that:
+
+```coffee
+function_wrapper ->
     fact(0) -> 1
     fact(N) -> N * fact(N - 1)
-  ```
+```
 
-то получим на выходе:
+You'll get:
 
-  ```js
-  function_wrapper(function() {
+```js
+function_wrapper(function() {
     fact(0)(function() {
       return 1;
     });
     fact(N)(function() {
       return N * fact(N - 1);
     });
-  });
-  ```
+});
+```
 
-Это значит что fact будет исполняться в контексте function_wrapper, которая может проанализировать приходящую ей параметром функцию перед исполнением на предмет недостающих функций и переменных и передать их в контекст исполнения. А значит у нас есть все данные чтобы сконструировать новый fact с нужными проверками и положить его в какой-то контейнер, например window.
+Now `fact` evaluates inside `function_wrapper` that can extend the argument function and run it in arbitrary context.
+It has all data to build up new `fact` function with required checks and assign it to a key of an object (`window` for example).
 
-##### TESTING:
-  ```shell
-  gulp test
-  ```
+Testing
+-------
 
-##### BENCHMARK:
-  ```shell
-  coffee bench/bench.coffee
-  ```
+```shell
+gulp test
+```
+  
+Benchmarking
+------------
+
+```shell
+coffee bench/bench.coffee
+```
+
