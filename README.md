@@ -44,6 +44,8 @@ cd f_context/example
 open example.html
 ```
 
+If you still think there's a mismatch or don't understand why it should work, you can read [how it works](#how-it-works) before.
+
 Disclaimer
 ----------
 
