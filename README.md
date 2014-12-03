@@ -314,7 +314,7 @@ return (function () {
 ```
 
 
-Ok, now `f_context` has all data to build up new `fact` function with required checks and assign it to a key of an object (`window` for example).
+Ok, now `function_wrapper` has all data to build up new `fact` function with required checks and assign it to a key of an object (`window` for example). That's how it works it a few words.
 
 And if you still don't understand how it works, you can read [the sources](https://github.com/nogizhopaboroda/f_context/blob/master/src/f_context.coffee)
 
