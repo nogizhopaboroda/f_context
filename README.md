@@ -277,7 +277,7 @@ var fact_stub = function(){ return function(){}; },
 
 Ok, now argument function executes without an errors. What's next?
 
-We can mark `N_stub` as a "variable" design `fact_stub` so it looks at itself arguments and generate a part of future wanted `fact`.
+We can mark `N_stub` as a "variable" and design `fact_stub` so it looks at itself arguments and generate a part of future wanted `fact`.
 
 ```js
 var N_stub = function(){};
