@@ -1,6 +1,6 @@
 describe "Common", ->
   #delete it after divide tests
-  f_context ->
+  test_module = f_context ->
 
     #factorial
     f_fact(0) -> 1
@@ -69,30 +69,30 @@ describe "Common", ->
 
 
   it('computes factorial', ->
-    expect(f_fact(5)).toBe(120)
+    expect(test_module.f_fact(5)).toBe(120)
   )
 
   it('computes fibonacci range', ->
-    expect(fibonacci_range(10)).toEqual([0, 1, 1, 2, 3, 5, 8, 13, 21, 34])
+    expect(test_module.fibonacci_range(10)).toEqual([0, 1, 1, 2, 3, 5, 8, 13, 21, 34])
   )
 
   it('computes count', ->
-    expect(f_count([0,1,2,3,4])).toBe(5)
+    expect(test_module.f_count([0,1,2,3,4])).toBe(5)
   )
 
   it('computes range', ->
-    expect(f_range(5)).toEqual([0,1,2,3,4])
+    expect(test_module.f_range(5)).toEqual([0,1,2,3,4])
   )
 
   it('computes range with guards', ->
-    expect(f_range_guard(5)).toEqual([0,1,2,3,4])
+    expect(test_module.f_range_guard(5)).toEqual([0,1,2,3,4])
   )
 
   it('computes function all', ->
-    expect(f_all([1,2,3,4], (i) -> i > 0)).toBe(true)
-    expect(f_all([1,2,3,4], (i) -> i > 1)).toBe(false)
+    expect(test_module.f_all([1,2,3,4], (i) -> i > 0)).toBe(true)
+    expect(test_module.f_all([1,2,3,4], (i) -> i > 1)).toBe(false)
   )
 
   it('computes function flatten', ->
-    expect(f_flatten([1, 2, [3], [4, 5, [6, [7]]], 8])).toEqual([1,2,3,4,5,6,7,8])
+    expect(test_module.f_flatten([1, 2, [3], [4, 5, [6, [7]]], 8])).toEqual([1,2,3,4,5,6,7,8])
   )

@@ -1,5 +1,4 @@
-namespace = if module? then module.exports else @
-
+glob = if global? then global else @
 
 unique = (input) ->
   output = {}
@@ -7,7 +6,9 @@ unique = (input) ->
   value for key, value of output
 
 
-f_context = (content, container = this) ->
+f_context = (content, debug_container) ->
+
+  container = {}
 
   current_module_name = null
 
@@ -55,9 +56,7 @@ f_context = (content, container = this) ->
     functions_calls[@fn_name]++
     (fn) =>
 
-      pseudo[@fn_name] or= """
-        var __slice = [].slice;
-      """
+      pseudo[@fn_name] or= ""
 
       plain_arguments = []
       variables = ""
@@ -148,14 +147,6 @@ f_context = (content, container = this) ->
         }\n
       """
 
-      if current_module_name? and functions_calls[@fn_name] is 1
-        pseudo[@fn_name] = """
-          var #{@fn_name} = #{current_module_name}['#{@fn_name}'];
-
-        """ + pseudo[@fn_name]
-
-      container[@fn_name] = build_function(pseudo[@fn_name])
-
 
   #pass stubs for local functions and variables
   build_function(
@@ -177,13 +168,45 @@ f_context = (content, container = this) ->
       )
       .concat((module_name) ->
         current_module_name = module_name
-        container = container[module_name] = {}
+        glob[module_name] = container
       )
   )
 
+  for fn_name, fn_body of pseudo
 
-  true
+    module_functions = ("#{fn_name1} = this['#{fn_name1}']" for fn_name1 in uniq_functions_names)
+
+    container[fn_name] = build_function("""
+      var __slice = [].slice;
+      var #{module_functions.join(', ')};
+      var #{fn_name} = function(){
+        #{fn_body}
+      };
+      return #{fn_name}.apply(null, arguments);
+    """, [])
 
 
-namespace.f_context = f_context
-namespace.f_context.version = '0.1'
+  context_tree = {}
+  for item in local_functions_map
+    context_tree[item.name] ?= []
+    context_tree[item.name].push(
+      conditions: item.conditions
+      params: item.params
+    )
+
+  if debug_container?
+    for name, item of context_tree
+      debug_container[name] = item
+
+  container
+
+
+
+f_context.version = '0.2'
+
+
+if module?
+  module.exports = f_context
+else
+  @f_context = f_context
+

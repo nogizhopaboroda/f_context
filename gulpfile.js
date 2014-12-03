@@ -37,4 +37,10 @@ gulp.task("test", function(done) {
 	}, done);
 });
 
+gulp.task("bench", function(done) {
+  karma.start({
+    configFile: __dirname + '/karma.bench.conf.js'
+  }, done);
+});
+
 gulp.task('default', ['build', 'build_example', 'watch']);

@@ -1,6 +1,6 @@
 describe "Arguments", ->
 
-  f_context ->
+  test_module = f_context ->
 
     arguments_test_1() -> "nothing"
     arguments_test_1(A) -> "one argument: #{A}"
@@ -9,9 +9,9 @@ describe "Arguments", ->
 
 
   it('matches string argument', ->
-    expect(arguments_test_1()).toBe("nothing")
-    expect(arguments_test_1("ok")).toBe("one argument: ok")
-    expect(arguments_test_1("ok", "not ok")).toBe("two arguments: ok, not ok")
-    expect(arguments_test_1("ok", "ok")).toBe("two arguments and it is the same: ok")
+    expect(test_module.arguments_test_1()).toBe("nothing")
+    expect(test_module.arguments_test_1("ok")).toBe("one argument: ok")
+    expect(test_module.arguments_test_1("ok", "not ok")).toBe("two arguments: ok, not ok")
+    expect(test_module.arguments_test_1("ok", "ok")).toBe("two arguments and it is the same: ok")
   )
 

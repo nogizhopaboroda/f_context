@@ -1,19 +1,22 @@
 {
   "name": "f_context",
   "description": "Pattern matching for coffeescript",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Alexander Zhukov",
   "main": "./dist/f_context.js",
   "devDependencies": {
-		"coffee-script": "^1.8.0",
+    "coffee-script": "^1.8.0",
     "gulp-coffee": "^2.2.0",
     "gulp-watch": "^2.0.0",
     "gulp-util": "^3.0.1",
     "gulp": "^3.8.10",
     "benchmark": "^1.0.0",
-		"karma": "^0.12.24",
-		"karma-coffee-preprocessor": "^0.2.1",
-		"karma-chrome-launcher": "^0.1.5",
-		"karma-jasmine": "^0.1.5"
+    "karma": "^0.12.24",
+    "karma-coffee-preprocessor": "^0.2.1",
+    "karma-chrome-launcher": "^0.1.5",
+    "karma-jasmine": "^0.1.5",
+    "karma-benchmark-reporter": "^0.1.1",
+    "grunt": "^0.4.5",
+    "karma-benchmark": "^0.4.0"
   }
 }
