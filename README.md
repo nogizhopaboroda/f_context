@@ -44,7 +44,7 @@ cd f_context/example
 open example.html
 ```
 
-If you still think there's a mismatch or don't understand why it should work, you can read [how it works](#how-it-works) before.
+If you still think there's incompliance or don't understand why it should work, you can read [how it works](#how-it-works) before.
 
 Disclaimer
 ----------
@@ -260,8 +260,63 @@ function_wrapper(function() {
 });
 ```
 
-Now `fact` evaluates inside `function_wrapper` that can extend the argument function and run it in arbitrary context.
-It has all data to build up new `fact` function with required checks and assign it to a key of an object (`window` for example).
+Now `fact` evaluates inside `function_wrapper` that can analyse the argument function, then modify and extend it before execution. Like this:
+
+```js
+var fact_stub = function(){ return function(){}; },
+    N_stub;
+(function(fact, N) {
+    fact(0)(function() {
+      return 1;
+    });
+    fact(N)(function() {
+      return N * fact(N - 1);
+    });
+})(fact_stub, N_stub);
+```
+
+Ok, now argument function executes without an errors. What's next?
+
+We can mark `N_stub` as a "variable" design `fact_stub` so it looks at itself arguments and generate a part of future wanted `fact`.
+
+```js
+var N_stub = function(){};
+N_stub.type = "variable";
+N_stub.name = "N";
+
+var fact_stub = function(argument){
+    return function(fact_computing_function){
+        if(typeof argument === "function" && argument.type === "variable"){
+            var generated_part = "var " + argument.name + " = arguments[0];" + 
+                + "return (" + fact_computing_function + ")()";
+            return generated_part;
+        } else {
+            var generated_part = "if(arguments[0] === " + argument + "){" +
+                + "return (" + fact_computing_function + ")()" + 
+                + "}";
+            return generated_part;
+        }
+    }; 
+}
+```
+
+So, generated `fact` will look like this:
+```js
+if(arguments[0] === 0){
+  return (function () {
+    return 1;     
+  })();
+
+var N = arguments[0];
+return (function () {       
+    return N * f_fact(N - 1);
+})();
+```
+
+
+Ok, now `f_context` has all data to build up new `fact` function with required checks and assign it to a key of an object (`window` for example).
+
+And if you still don't understand how it works, you can read [the sources](https://github.com/nogizhopaboroda/f_context/blob/master/src/f_context.coffee)
 
 Testing
 -------
@@ -277,6 +332,8 @@ Benchmarking
 coffee bench/bench.coffee
 ```
 
+Other
+-----
 
 Thanks a lot to [yegortimoschenko](https://github.com/yegortimoschenko) for translation and correction of this document.
 
