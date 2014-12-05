@@ -72,7 +72,14 @@ Or you can clone the repo instead: the release resides in `dist/f_context.js` fi
 git clone git@github.com:nogizhopaboroda/f_context.git
 ```
 
-NPM package is not avaliable yet.
+Using npm:
+```shell
+npm install git+ssh://git@github.com:nogizhopaboroda/f_context.git
+```
+Then
+```coffee
+f_context = require('f_context')
+```
 
 ### Modules
 
