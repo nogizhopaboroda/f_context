@@ -74,7 +74,7 @@ git clone git@github.com:nogizhopaboroda/f_context.git
 
 Using npm:
 ```shell
-npm install git+ssh://git@github.com:nogizhopaboroda/f_context.git
+npm install f_context
 ```
 Then
 ```coffee
