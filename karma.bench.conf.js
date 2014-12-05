@@ -14,7 +14,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'src/f_context.coffee',
-      'bench/bench2.coffee'
+      'bench/bench.coffee'
     ],
 
     // preprocess matching files before serving them to the browser

@@ -1,71 +1,87 @@
 glob = if global? then global else @
 
+#lists tools
 unique = (input) ->
   output = {}
   output[input[key]] = input[key] for key in [0...input.length]
   value for key, value of output
 
+keys = (obj) -> (key for key of obj)
+values = (obj) -> (value for key, value of obj)
+
+
+#functions tools
+extract_function_body = (fn) ->
+  fn.toString().replace(/function.*\{([\s\S]+)\}$/ig, "$1")
+
+build_function = (function_body, function_arguments_names = []) ->
+  concated = function_arguments_names.slice()
+  concated.push(function_body)
+  Function.apply(null, concated)
+
+make_variable = (name) ->
+  fake_function = ->
+    name
+  fake_function.type = "variable"
+  fake_function
+
+
 
 f_context = (content, debug_container) ->
 
-  container = {}
-
   current_module_name = null
 
-  #private functions
-  build_function = (function_body, function_arguments_names = []) ->
-    concated = function_arguments_names.slice()
-    concated.push(function_body)
-    Function.apply(null, concated)
+  context_tree = {
+    variables: []
+    functions: {}
+  }
 
   local_functions_map = ({
     name: item.split("(").shift()
-    params: item.split('(where')[0].split('(function')[0].replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1").replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1").replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1").match(/^.*\((.*)?\)/)[1]?.split(", ") or []
-    conditions: item.match(/^.*\((.*)\)\(where\((.*)\)\(function/)?[2].split(", ")
-  } for item in content.toString().match(/(?:[a-zA-Z0-9_]+)+\((.*)?\)\(function/ig))
+    params: item.split('(where')[0]
+      .split('(function')[0]
+      .replace(/__slice\.call\(([a-zA-Z0-9]+)\)/ig, "$1")
+      .replace(/\.concat\(([a-zA-Z0-9\[\], ]+)\)/ig, ", $1")
+      .replace(/\[([a-zA-Z0-9, ]+)\]/ig, "$1")
+      .match(/^.*\((.*)?\)/)[1]?.split(", ") or []
+    conditions: item
+                .match(/^.*\((.*)\)\(where\((.*)\)\(function/)?[2].split(", ")
+  } for item in \
+      content.toString().match(/(?:[a-zA-Z0-9_]+)+\((.*)?\)\(function/ig))
 
 
-  #find uniq_functions_names
-  uniq_functions_names = unique(item.name for item in local_functions_map)
+  #build context tree
+  for item in local_functions_map
+    context_tree['functions'][item.name] ?= []
+    context_tree['functions'][item.name].push(
+      guards: item.conditions
+      params: item.params
+      variables: {}
+      conditions: []
+      body: ""
+    )
 
+    context_tree['variables'].push(param) \
+      for param in item.params \
+      when /^(?!true|false)[a-zA-Z_]([a-zA-Z0-9_]+)?$/.test(param) \
+        and param not in context_tree['variables']
 
-  #find uniq_variables_names
-  uniq_variables_names = []
-  for index, item of local_functions_map
-    for i, param of item.params
-      if /^(?!true|false)[a-zA-Z_]([a-zA-Z0-9_]+)?$/.test(param)
-        uniq_variables_names.push(param)
-  uniq_variables_names = unique(uniq_variables_names)
-
-
-  #make variables stubs
-  make_variable = (name) ->
-    fake_function = ->
-      name
-    fake_function.type = "variable"
-    fake_function
-
-  variables_stubs = (make_variable(x) for x in uniq_variables_names)
 
 
   #base function that local functions bind to
-  functions_calls = {}
-  pseudo = {}
   base_fn = (args...) ->
-    functions_calls[@fn_name] or= 0
-    functions_calls[@fn_name]++
+
     (fn) =>
 
-      pseudo[@fn_name] or= ""
+      context_tree['functions'][@fn_name][@index]['body'] = \
+        extract_function_body(fn)
 
-      plain_arguments = []
-      variables = ""
       for argument, index in args
         if argument.type is "variable"
           if argument() isnt '_'
-            variables += """
-              var #{argument()} = arguments[#{index}];\n
-            """
+            context_tree['functions'][@fn_name]\
+              [@index]['variables'][argument()] = "arguments[#{index}]"
+
         else
           if typeof argument is 'object' and argument instanceof Array
             if (x for x in argument when typeof x is 'function').length > 0
@@ -75,138 +91,131 @@ f_context = (content, debug_container) ->
                 if k.destructuring
                   destructuring_happened = true
                   rest = argument.length - subindex - 1
-                  variables += """
-                    var #{k()} = arguments[#{index}].slice(#{subindex}, arguments[#{index}].length - #{rest});\n
-                  """
+                  context_tree['functions'][@fn_name]\
+                    [@index]['variables'][k()] = \
+                      "arguments[#{index}].slice(#{subindex}, \
+                       arguments[#{index}].length - #{rest})"
                 else
                   if destructuring_happened
                     restindex = argument.length - subindex
-                    variables += """
-                      var #{k()} = arguments[#{index}][arguments[#{index}].length - #{restindex}];\n
-                    """
+                    context_tree['functions'][@fn_name]\
+                      [@index]['variables'][k()] = \
+                        "arguments[#{index}]\
+                         [arguments[#{index}].length - #{restindex}]"
                   else
-                    variables += """
-                      var #{k()} = arguments[#{index}][#{subindex}];\n
-                    """
+                    context_tree['functions'][@fn_name]\
+                    [@index]['variables'][k()] = \
+                      "arguments[#{index}][#{subindex}]"
             else
-              plain_arguments.push("JSON.stringify(arguments[#{index}]) === '#{JSON.stringify(argument)}'")
-          else if typeof argument is 'string'
-            plain_arguments.push("arguments[#{index}] === '#{argument}'")
-          else
-            plain_arguments.push("arguments[#{index}] === #{argument}")
+              context_tree['functions'][@fn_name]\
+                [@index]['conditions'].push(\
+                  "JSON.stringify(arguments[#{index}]) === \
+                  '#{JSON.stringify(argument)}'"\
+                )
 
-      plain_arguments.push("arguments.length === #{args.length}")
+          else if typeof argument is 'string'
+            context_tree['functions'][@fn_name]\
+              [@index]['conditions'].push(\
+                "arguments[#{index}] === '#{argument}'"\
+              )
+          else
+            context_tree['functions'][@fn_name][@index]['conditions'].push("arguments[#{index}] === #{argument}")
+
+      context_tree['functions'][@fn_name][@index]['conditions'].push("arguments.length === #{args.length}")
 
 
       duplicates = {}
       for variable in ({name: arg(), index: index} for arg, index in args when typeof arg is 'function') when variable.name isnt '_'
         if duplicates[variable.name]?
-          plain_arguments.push("arguments[#{variable.index}] === arguments[#{duplicates[variable.name]}]")
+          context_tree['functions'][@fn_name][@index]['conditions'].push("arguments[#{variable.index}] === arguments[#{duplicates[variable.name]}]")
         else
           duplicates[variable.name] = variable.index
 
 
-      #add destructuring variables for guards conditions
-      additional_condition_variables = []
-      for arg, index in args when arg instanceof Array and arg.length > 0
-        destructuring_happened = false
-        for x, subindex in arg
-          if x.destructuring
-            destructuring_happened = true
-            rest = arg.length - subindex - 1
-            additional_condition_variables.push({
-              name: x()
-              value: "arguments[#{index}].slice(#{subindex}, arguments[#{index}].length - #{rest})"
-            })
-          else
-            if destructuring_happened
-              restindex = arg.length - subindex
-              additional_condition_variables.push({
-                name: x()
-                value: "arguments[#{index}][arguments[#{index}].length - #{restindex}]"
-              })
-            else
-              additional_condition_variables.push({
-                name: x()
-                value: "arguments[#{index}][#{subindex}]"
-              })
-      # / add destructuring variables for guards conditions
-
-      conditions = (x for x in local_functions_map when x.name is @fn_name)[functions_calls[@fn_name] - 1].conditions
-      if conditions?
-        plain_arguments.push("""
-          (function(#{(name for name of duplicates).concat((item.name for item in additional_condition_variables)).join(', ')}){
-            return #{conditions.join(' && ')}
-          })(#{("arguments[#{index}]" for name, index of duplicates).concat((item.value for item in additional_condition_variables)).join(', ')})
-        """)
-
-      pseudo[@fn_name] = pseudo[@fn_name] + """
-        if(#{plain_arguments.join(" && ")}){
-          #{variables}
-          return (#{fn})()
-        }\n
-      """
+      @index++
 
 
   #pass stubs for local functions and variables
   build_function(
-    content.toString().replace(/\n/g, ' ').replace(/function \(\) \{(.*) \}$/gmi, "$1"),
-    uniq_functions_names
-      .concat(uniq_variables_names)
-      .concat(['where'])
-      .concat(['__slice'])
-      .concat(['module'])
+    extract_function_body(content),
+    [
+      keys(context_tree.functions)... ,
+      context_tree.variables... ,
+      ['where', '__slice', 'module']...
+    ]
   ).apply(
     null,
-    (base_fn.bind({ fn_name: item }) for item in uniq_functions_names)
-      .concat(variables_stubs)
-      .concat(-> (fn) -> fn)
-      .concat(->
+    [
+      (base_fn.bind({ fn_name: item, index: 0 }) for item in keys(context_tree.functions))... ,
+      (make_variable(variable) for variable in context_tree.variables)... ,
+      (-> (fn) -> fn),
+      (->
         class destructuring_variable extends @
         destructuring_variable.destructuring = true
         [destructuring_variable]
-      )
-      .concat((module_name) ->
+      ),
+      ((module_name) ->
         current_module_name = module_name
-        glob[module_name] = container
       )
+    ]
   )
 
-  for fn_name, fn_body of pseudo
 
-    module_functions = ("#{fn_name1} = this['#{fn_name1}']" for fn_name1 in uniq_functions_names)
+  module_body = "var __slice = [].slice;\n"
 
-    container[fn_name] = build_function("""
-      var __slice = [].slice;
-      var #{module_functions.join(', ')};
+  for fn_name, fn_parts of context_tree.functions
+
+    local_functions = ""
+
+    for part, index in fn_parts
+
+      {conditions, guards, params, variables, body} = part
+
+      if guards?
+        module_body += """
+          var guard_#{fn_name}_#{index} = function(#{keys(fn_parts[index].variables).join(", ")}){
+            return #{guards.join(' && ')};
+          };
+        """
+
+        conditions.push("guard_#{fn_name}_#{index}(#{values(fn_parts[index].variables).join(", ")})")
+
+      module_body += "var #{fn_name}_local_#{index} = function(#{keys(variables).join(", ")}){ #{body} };\n"
+
+      local_functions += "if(#{conditions.join(" && ")}){\n"
+      local_functions += "\treturn #{fn_name}_local_#{index}(#{values(variables).join(", ")});\n"
+      local_functions += "}\n"
+
+
+    module_body += """
       var #{fn_name} = function(){
-        #{fn_body}
-      };
-      return #{fn_name}.apply(null, arguments);
-    """, [])
+        #{local_functions}
+      };\n
+    """
 
 
-  context_tree = {}
-  for item in local_functions_map
-    context_tree[item.name] ?= []
-    context_tree[item.name].push(
-      conditions: item.conditions
-      params: item.params
-    )
+  module_body += """
+    return { #{("#{x}: #{x}" for x in keys(context_tree.functions)).join(',\n')} };
+  """
+
 
   if debug_container?
     for name, item of context_tree
       debug_container[name] = item
 
-  container
+
+  if current_module_name?
+    glob[current_module_name] = build_function(module_body)()
+
+
+  build_function(module_body)()
 
 
 
-f_context.version = '0.2'
+f_context.version = '0.3'
 
 
 if module?
   module.exports = f_context
 else
   @f_context = f_context
-

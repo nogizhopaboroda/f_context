@@ -1,5 +1,6 @@
 (function() {
-  var f_context, glob, unique,
+  var build_function, extract_function_body, f_context, glob, keys, make_variable, unique, values,
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -20,18 +21,54 @@
     return _results;
   };
 
+  keys = function(obj) {
+    var key, _results;
+    _results = [];
+    for (key in obj) {
+      _results.push(key);
+    }
+    return _results;
+  };
+
+  values = function(obj) {
+    var key, value, _results;
+    _results = [];
+    for (key in obj) {
+      value = obj[key];
+      _results.push(value);
+    }
+    return _results;
+  };
+
+  extract_function_body = function(fn) {
+    return fn.toString().replace(/function.*\{([\s\S]+)\}$/ig, "$1");
+  };
+
+  build_function = function(function_body, function_arguments_names) {
+    var concated;
+    if (function_arguments_names == null) {
+      function_arguments_names = [];
+    }
+    concated = function_arguments_names.slice();
+    concated.push(function_body);
+    return Function.apply(null, concated);
+  };
+
+  make_variable = function(name) {
+    var fake_function;
+    fake_function = function() {
+      return name;
+    };
+    fake_function.type = "variable";
+    return fake_function;
+  };
+
   f_context = function(content, debug_container) {
-    var base_fn, build_function, container, context_tree, current_module_name, fn_body, fn_name, fn_name1, functions_calls, i, index, item, local_functions_map, make_variable, module_functions, name, param, pseudo, uniq_functions_names, uniq_variables_names, variables_stubs, x, _i, _len, _name, _ref;
-    container = {};
+    var base_fn, body, conditions, context_tree, current_module_name, fn_name, fn_parts, guards, index, item, local_functions, local_functions_map, module_body, name, param, params, part, variable, variables, x, _base, _i, _j, _k, _len, _len1, _len2, _name, _ref, _ref1;
     current_module_name = null;
-    build_function = function(function_body, function_arguments_names) {
-      var concated;
-      if (function_arguments_names == null) {
-        function_arguments_names = [];
-      }
-      concated = function_arguments_names.slice();
-      concated.push(function_body);
-      return Function.apply(null, concated);
+    context_tree = {
+      variables: [],
+      functions: {}
     };
     local_functions_map = (function() {
       var _i, _len, _ref, _ref1, _ref2, _results;
@@ -47,70 +84,46 @@
       }
       return _results;
     })();
-    uniq_functions_names = unique((function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = local_functions_map.length; _i < _len; _i++) {
-        item = local_functions_map[_i];
-        _results.push(item.name);
+    for (_i = 0, _len = local_functions_map.length; _i < _len; _i++) {
+      item = local_functions_map[_i];
+      if ((_base = context_tree['functions'])[_name = item.name] == null) {
+        _base[_name] = [];
       }
-      return _results;
-    })());
-    uniq_variables_names = [];
-    for (index in local_functions_map) {
-      item = local_functions_map[index];
+      context_tree['functions'][item.name].push({
+        guards: item.conditions,
+        params: item.params,
+        variables: {},
+        conditions: [],
+        body: ""
+      });
       _ref = item.params;
-      for (i in _ref) {
-        param = _ref[i];
-        if (/^(?!true|false)[a-zA-Z_]([a-zA-Z0-9_]+)?$/.test(param)) {
-          uniq_variables_names.push(param);
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        param = _ref[_j];
+        if (/^(?!true|false)[a-zA-Z_]([a-zA-Z0-9_]+)?$/.test(param) && __indexOf.call(context_tree['variables'], param) < 0) {
+          context_tree['variables'].push(param);
         }
       }
     }
-    uniq_variables_names = unique(uniq_variables_names);
-    make_variable = function(name) {
-      var fake_function;
-      fake_function = function() {
-        return name;
-      };
-      fake_function.type = "variable";
-      return fake_function;
-    };
-    variables_stubs = (function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = uniq_variables_names.length; _i < _len; _i++) {
-        x = uniq_variables_names[_i];
-        _results.push(make_variable(x));
-      }
-      return _results;
-    })();
-    functions_calls = {};
-    pseudo = {};
     base_fn = function() {
-      var args, _name;
+      var args;
       args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      functions_calls[_name = this.fn_name] || (functions_calls[_name] = 0);
-      functions_calls[this.fn_name]++;
       return (function(_this) {
         return function(fn) {
-          var additional_condition_variables, arg, argument, conditions, destructuring_happened, duplicates, k, name, plain_arguments, rest, restindex, subindex, variable, variables, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _name1, _ref1;
-          pseudo[_name1 = _this.fn_name] || (pseudo[_name1] = "");
-          plain_arguments = [];
-          variables = "";
-          for (index = _i = 0, _len = args.length; _i < _len; index = ++_i) {
+          var arg, argument, destructuring_happened, duplicates, index, k, rest, restindex, subindex, variable, x, _k, _l, _len2, _len3, _len4, _m, _ref1;
+          context_tree['functions'][_this.fn_name][_this.index]['body'] = extract_function_body(fn);
+          for (index = _k = 0, _len2 = args.length; _k < _len2; index = ++_k) {
             argument = args[index];
             if (argument.type === "variable") {
               if (argument() !== '_') {
-                variables += "var " + (argument()) + " = arguments[" + index + "];\n";
+                context_tree['functions'][_this.fn_name][_this.index]['variables'][argument()] = "arguments[" + index + "]";
               }
             } else {
               if (typeof argument === 'object' && argument instanceof Array) {
                 if (((function() {
-                  var _j, _len1, _results;
+                  var _l, _len3, _results;
                   _results = [];
-                  for (_j = 0, _len1 = argument.length; _j < _len1; _j++) {
-                    x = argument[_j];
+                  for (_l = 0, _len3 = argument.length; _l < _len3; _l++) {
+                    x = argument[_l];
                     if (typeof x === 'function') {
                       _results.push(x);
                     }
@@ -118,37 +131,37 @@
                   return _results;
                 })()).length > 0) {
                   destructuring_happened = false;
-                  for (subindex = _j = 0, _len1 = argument.length; _j < _len1; subindex = ++_j) {
+                  for (subindex = _l = 0, _len3 = argument.length; _l < _len3; subindex = ++_l) {
                     k = argument[subindex];
                     if (k.destructuring) {
                       destructuring_happened = true;
                       rest = argument.length - subindex - 1;
-                      variables += "var " + (k()) + " = arguments[" + index + "].slice(" + subindex + ", arguments[" + index + "].length - " + rest + ");\n";
+                      context_tree['functions'][_this.fn_name][_this.index]['variables'][k()] = "arguments[" + index + "].slice(" + subindex + ", arguments[" + index + "].length - " + rest + ")";
                     } else {
                       if (destructuring_happened) {
                         restindex = argument.length - subindex;
-                        variables += "var " + (k()) + " = arguments[" + index + "][arguments[" + index + "].length - " + restindex + "];\n";
+                        context_tree['functions'][_this.fn_name][_this.index]['variables'][k()] = "arguments[" + index + "][arguments[" + index + "].length - " + restindex + "]";
                       } else {
-                        variables += "var " + (k()) + " = arguments[" + index + "][" + subindex + "];\n";
+                        context_tree['functions'][_this.fn_name][_this.index]['variables'][k()] = "arguments[" + index + "][" + subindex + "]";
                       }
                     }
                   }
                 } else {
-                  plain_arguments.push("JSON.stringify(arguments[" + index + "]) === '" + (JSON.stringify(argument)) + "'");
+                  context_tree['functions'][_this.fn_name][_this.index]['conditions'].push("JSON.stringify(arguments[" + index + "]) === '" + (JSON.stringify(argument)) + "'");
                 }
               } else if (typeof argument === 'string') {
-                plain_arguments.push("arguments[" + index + "] === '" + argument + "'");
+                context_tree['functions'][_this.fn_name][_this.index]['conditions'].push("arguments[" + index + "] === '" + argument + "'");
               } else {
-                plain_arguments.push("arguments[" + index + "] === " + argument);
+                context_tree['functions'][_this.fn_name][_this.index]['conditions'].push("arguments[" + index + "] === " + argument);
               }
             }
           }
-          plain_arguments.push("arguments.length === " + args.length);
+          context_tree['functions'][_this.fn_name][_this.index]['conditions'].push("arguments.length === " + args.length);
           duplicates = {};
           _ref1 = (function() {
-            var _l, _len2, _results;
+            var _len4, _n, _results;
             _results = [];
-            for (index = _l = 0, _len2 = args.length; _l < _len2; index = ++_l) {
+            for (index = _n = 0, _len4 = args.length; _n < _len4; index = ++_n) {
               arg = args[index];
               if (typeof arg === 'function') {
                 _results.push({
@@ -159,163 +172,104 @@
             }
             return _results;
           })();
-          for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
-            variable = _ref1[_k];
+          for (_m = 0, _len4 = _ref1.length; _m < _len4; _m++) {
+            variable = _ref1[_m];
             if (variable.name !== '_') {
               if (duplicates[variable.name] != null) {
-                plain_arguments.push("arguments[" + variable.index + "] === arguments[" + duplicates[variable.name] + "]");
+                context_tree['functions'][_this.fn_name][_this.index]['conditions'].push("arguments[" + variable.index + "] === arguments[" + duplicates[variable.name] + "]");
               } else {
                 duplicates[variable.name] = variable.index;
               }
             }
           }
-          additional_condition_variables = [];
-          for (index = _l = 0, _len3 = args.length; _l < _len3; index = ++_l) {
-            arg = args[index];
-            if (!(arg instanceof Array && arg.length > 0)) {
-              continue;
-            }
-            destructuring_happened = false;
-            for (subindex = _m = 0, _len4 = arg.length; _m < _len4; subindex = ++_m) {
-              x = arg[subindex];
-              if (x.destructuring) {
-                destructuring_happened = true;
-                rest = arg.length - subindex - 1;
-                additional_condition_variables.push({
-                  name: x(),
-                  value: "arguments[" + index + "].slice(" + subindex + ", arguments[" + index + "].length - " + rest + ")"
-                });
-              } else {
-                if (destructuring_happened) {
-                  restindex = arg.length - subindex;
-                  additional_condition_variables.push({
-                    name: x(),
-                    value: "arguments[" + index + "][arguments[" + index + "].length - " + restindex + "]"
-                  });
-                } else {
-                  additional_condition_variables.push({
-                    name: x(),
-                    value: "arguments[" + index + "][" + subindex + "]"
-                  });
-                }
-              }
-            }
-          }
-          conditions = ((function() {
-            var _len5, _n, _results;
-            _results = [];
-            for (_n = 0, _len5 = local_functions_map.length; _n < _len5; _n++) {
-              x = local_functions_map[_n];
-              if (x.name === this.fn_name) {
-                _results.push(x);
-              }
-            }
-            return _results;
-          }).call(_this))[functions_calls[_this.fn_name] - 1].conditions;
-          if (conditions != null) {
-            plain_arguments.push("(function(" + (((function() {
-              var _results;
-              _results = [];
-              for (name in duplicates) {
-                _results.push(name);
-              }
-              return _results;
-            })()).concat((function() {
-              var _len5, _n, _results;
-              _results = [];
-              for (_n = 0, _len5 = additional_condition_variables.length; _n < _len5; _n++) {
-                item = additional_condition_variables[_n];
-                _results.push(item.name);
-              }
-              return _results;
-            })()).join(', ')) + "){\n  return " + (conditions.join(' && ')) + "\n})(" + (((function() {
-              var _results;
-              _results = [];
-              for (name in duplicates) {
-                index = duplicates[name];
-                _results.push("arguments[" + index + "]");
-              }
-              return _results;
-            })()).concat((function() {
-              var _len5, _n, _results;
-              _results = [];
-              for (_n = 0, _len5 = additional_condition_variables.length; _n < _len5; _n++) {
-                item = additional_condition_variables[_n];
-                _results.push(item.value);
-              }
-              return _results;
-            })()).join(', ')) + ")");
-          }
-          return pseudo[_this.fn_name] = pseudo[_this.fn_name] + ("if(" + (plain_arguments.join(" && ")) + "){\n  " + variables + "\n  return (" + fn + ")()\n}\n");
+          return _this.index++;
         };
       })(this);
     };
-    build_function(content.toString().replace(/\n/g, ' ').replace(/function \(\) \{(.*) \}$/gmi, "$1"), uniq_functions_names.concat(uniq_variables_names).concat(['where']).concat(['__slice']).concat(['module'])).apply(null, ((function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = uniq_functions_names.length; _i < _len; _i++) {
-        item = uniq_functions_names[_i];
-        _results.push(base_fn.bind({
-          fn_name: item
-        }));
-      }
-      return _results;
-    })()).concat(variables_stubs).concat(function() {
-      return function(fn) {
-        return fn;
-      };
-    }).concat(function() {
-      var destructuring_variable;
-      destructuring_variable = (function(_super) {
-        __extends(destructuring_variable, _super);
-
-        function destructuring_variable() {
-          return destructuring_variable.__super__.constructor.apply(this, arguments);
-        }
-
-        return destructuring_variable;
-
-      })(this);
-      destructuring_variable.destructuring = true;
-      return [destructuring_variable];
-    }).concat(function(module_name) {
-      current_module_name = module_name;
-      return glob[module_name] = container;
-    }));
-    for (fn_name in pseudo) {
-      fn_body = pseudo[fn_name];
-      module_functions = (function() {
-        var _i, _len, _results;
+    build_function(extract_function_body(content), __slice.call(keys(context_tree.functions)).concat(__slice.call(context_tree.variables), __slice.call(['where', '__slice', 'module']))).apply(null, __slice.call((function() {
+        var _k, _len2, _ref1, _results;
+        _ref1 = keys(context_tree.functions);
         _results = [];
-        for (_i = 0, _len = uniq_functions_names.length; _i < _len; _i++) {
-          fn_name1 = uniq_functions_names[_i];
-          _results.push("" + fn_name1 + " = this['" + fn_name1 + "']");
+        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+          item = _ref1[_k];
+          _results.push(base_fn.bind({
+            fn_name: item,
+            index: 0
+          }));
         }
         return _results;
-      })();
-      container[fn_name] = build_function("var __slice = [].slice;\nvar " + (module_functions.join(', ')) + ";\nvar " + fn_name + " = function(){\n  " + fn_body + "\n};\nreturn " + fn_name + ".apply(null, arguments);", []);
-    }
-    context_tree = {};
-    for (_i = 0, _len = local_functions_map.length; _i < _len; _i++) {
-      item = local_functions_map[_i];
-      if (context_tree[_name = item.name] == null) {
-        context_tree[_name] = [];
+      })()).concat(__slice.call((function() {
+        var _k, _len2, _ref1, _results;
+        _ref1 = context_tree.variables;
+        _results = [];
+        for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+          variable = _ref1[_k];
+          _results.push(make_variable(variable));
+        }
+        return _results;
+      })()), [(function() {
+        return function(fn) {
+          return fn;
+        };
+      })], [(function() {
+        var destructuring_variable;
+        destructuring_variable = (function(_super) {
+          __extends(destructuring_variable, _super);
+
+          function destructuring_variable() {
+            return destructuring_variable.__super__.constructor.apply(this, arguments);
+          }
+
+          return destructuring_variable;
+
+        })(this);
+        destructuring_variable.destructuring = true;
+        return [destructuring_variable];
+      })], [(function(module_name) {
+        return current_module_name = module_name;
+      })]));
+    module_body = "var __slice = [].slice;\n";
+    _ref1 = context_tree.functions;
+    for (fn_name in _ref1) {
+      fn_parts = _ref1[fn_name];
+      local_functions = "";
+      for (index = _k = 0, _len2 = fn_parts.length; _k < _len2; index = ++_k) {
+        part = fn_parts[index];
+        conditions = part.conditions, guards = part.guards, params = part.params, variables = part.variables, body = part.body;
+        if (guards != null) {
+          module_body += "var guard_" + fn_name + "_" + index + " = function(" + (keys(fn_parts[index].variables).join(", ")) + "){\n  return " + (guards.join(' && ')) + ";\n};";
+          conditions.push("guard_" + fn_name + "_" + index + "(" + (values(fn_parts[index].variables).join(", ")) + ")");
+        }
+        module_body += "var " + fn_name + "_local_" + index + " = function(" + (keys(variables).join(", ")) + "){ " + body + " };\n";
+        local_functions += "if(" + (conditions.join(" && ")) + "){\n";
+        local_functions += "\treturn " + fn_name + "_local_" + index + "(" + (values(variables).join(", ")) + ");\n";
+        local_functions += "}\n";
       }
-      context_tree[item.name].push({
-        conditions: item.conditions,
-        params: item.params
-      });
+      module_body += "var " + fn_name + " = function(){\n  " + local_functions + "\n};\n";
     }
+    module_body += "return { " + (((function() {
+      var _l, _len3, _ref2, _results;
+      _ref2 = keys(context_tree.functions);
+      _results = [];
+      for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
+        x = _ref2[_l];
+        _results.push("" + x + ": " + x);
+      }
+      return _results;
+    })()).join(',\n')) + " };";
     if (debug_container != null) {
       for (name in context_tree) {
         item = context_tree[name];
         debug_container[name] = item;
       }
     }
-    return container;
+    if (current_module_name != null) {
+      glob[current_module_name] = build_function(module_body)();
+    }
+    return build_function(module_body)();
   };
 
-  f_context.version = '0.2';
+  f_context.version = '0.3';
 
   if (typeof module !== "undefined" && module !== null) {
     module.exports = f_context;

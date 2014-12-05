@@ -54,8 +54,6 @@ This doesn't contain any hacks and evals whatsoever.
 Functions in examples are prefixed with `f_` so it is easy to distinguish
 between functional and imperative counterparts, i.e. `f_` prefix is not enforced.
 
-Although it needs some refactoring, it works and
-[passes tests](https://github.com/nogizhopaboroda/f_context/tree/master/tests).
 
 Installation
 ------------
@@ -344,7 +342,7 @@ Benchmarking
 ------------
 
 ```shell
-coffee bench/bench.coffee
+gulp bench
 ```
 
 Other

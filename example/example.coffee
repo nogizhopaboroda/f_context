@@ -1,6 +1,6 @@
-f_context(->
+@examples = f_context ->
 
-  module("examples")
+  #module("examples")
 
   #factorial
   f_fact(0) -> 1
@@ -94,4 +94,6 @@ f_context(->
   f_qsort([]) -> []
   f_qsort([Pivot, Rest...]) ->
     [f_qsort((X for X in Rest when X < Pivot))..., Pivot, f_qsort((Y for Y in Rest when Y >= Pivot))...]
-, (@debug_container = {}))
+
+
+

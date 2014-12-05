@@ -1,78 +1,49 @@
-Benchmark = require('benchmark');
-
-f_context_v0_1 = require("./releases/0.1/f_context").f_context;
-f_context_current = require("./../dist/f_context");
-
-
-#factorial computation benchmarks
-f_context_v0_1 ->
-
-  f_fact_0_1(0) -> 1
-  f_fact_0_1(N) -> N * f_fact_0_1(N - 1)
-
-f_context_current ->
-
-  module("current_release")
+fact = f_context ->
 
   f_fact(0) -> 1
   f_fact(N) -> N * f_fact(N - 1)
 
 
-optimization_1 = () ->
-  o = {
-    1: -> 1
-    n: (N) -> N * optimization_1(N - 1)
-  }
-  optimization_1 = () ->
-    if arguments[0] == 0 and arguments.length is 1
-      return o["1"]()
-
-    if arguments.length is 1
-      return o["n"](arguments[0])
-  optimization_1.apply(null, arguments)
-
-
-optimization_2 = () ->
-  #idea is to precompute function which called as hash of arguments and guards
-  #f.e. char codes range string
+#optimization idea
+cont = ->
   abcde32423df4 = -> 1
-  sdf2234gsfg52 = (N) -> N * optimization_2(N - 1)
+  sdf2234gsfg52 = (N) -> N * factor(N - 1)
 
-  optimization_2 = () ->
+  factor = () ->
     if arguments[0] == 0 and arguments.length is 1
       return abcde32423df4()
 
     if arguments.length is 1
       return sdf2234gsfg52(arguments[0])
-  optimization_2.apply(null, arguments)
 
+  {
+    factor: factor
+  }
+container = cont()
 
+#plain recusrion
 plain_f_factorial = (n) -> !n and 1 or n * plain_f_factorial(n - 1);
 
+#loop
 plain_c_factorial = (n) ->
   result = 1
   for i in [1..n]
     result *= i
   result
 
-suite = new Benchmark.Suite
 
-suite
-  .add 'f_context factorial release 0.1', ->
-    f_fact_0_1(10)
-  .add 'f_context factorial current release', ->
-    current_release.f_fact(10)
-  .add 'optimization idea #1', ->
-    optimization_1(10)
-  .add 'optimization idea #2', ->
-    optimization_2(10)
-  .add 'plain recursion style factorial', ->
+suite 'Factorial', ->
+
+  benchmark('current release', ->
+    fact.f_fact(10)
+  )
+  benchmark('plain recursion style factorial', ->
     plain_f_factorial(10)
-  .add 'plain loop style factorial', ->
+  )
+  benchmark('plain loop style factoria', ->
     plain_c_factorial(10)
-  .on 'cycle', (event) ->
-    console.log(String(event.target))
-  .on 'complete', ->
-    console.log('Fastest is ' + this.filter('fastest').pluck('name'))
-  .run('async': false)
-# / factorial computation benchmarks
+  )
+  benchmark('optimization idea', ->
+    container.factor(10)
+  )
+

@@ -1,8 +1,7 @@
 (function() {
   var __slice = [].slice;
 
-  f_context(function() {
-    module("examples");
+  this.examples = f_context(function() {
     f_fact(0)(function() {
       return 1;
     });
@@ -117,6 +116,6 @@
           return _results;
         })())));
     });
-  }, (this.debug_container = {}));
+  });
 
 }).call(this);
