@@ -349,3 +349,7 @@ Other
 -----
 
 Thanks a lot to [yegortimoschenko](https://github.com/yegortimoschenko) for translation and correction of this document.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/nogizhopaboroda/f_context/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
